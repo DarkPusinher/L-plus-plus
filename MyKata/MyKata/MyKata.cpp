@@ -274,7 +274,26 @@ void inline Combo()
 		{
 			if (((dagger1 != nullptr) || (dagger2 != nullptr) || (QDagger != nullptr) || (WDagger != nullptr)) && current - timer > 50 && Distance(player, enemy) <= E->Range())
 			{
-				E->CastOnUnit(enemy);
+				if (dagger1 == nullptr && dagger2 == nullptr)
+				{
+					E->CastOnUnit(enemy);
+				}
+				if (dagger1 != nullptr)
+				{
+					int bound = enemy->BoundingRadius();
+					Vec3 enemyPos = enemy->GetPosition();
+					Vec3 dagger1Pos = dagger1->GetPosition();
+					Vec3 cast = Extend(enemyPos, dagger1Pos, (enemy->BoundingRadius()));
+					E->CastOnPosition(cast);
+				}
+				if (dagger2 != nullptr)
+				{
+					int bound = enemy->BoundingRadius();
+					Vec3 enemyPos = enemy->GetPosition();
+					Vec3 dagger2Pos = dagger2->GetPosition();
+					Vec3 cast = Extend(enemyPos, dagger2Pos, (enemy->BoundingRadius()));
+					E->CastOnPosition(cast);
+				}
 			}
 			if (dagger1 != nullptr && Distance(dagger1, player) <= E->Range() && Distance (dagger1, enemy) < Distance(player, enemy) && Distance(enemy, player) >E->Range())
 			{
@@ -347,7 +366,26 @@ void inline Combo2()
 		{
 			if ((((dagger1 != nullptr && Distance(dagger1, enemy) <= 350 && Distance(player, enemy) <= E->Range()) || ((dagger2 != nullptr && Distance(dagger2, enemy) <= 350 && Distance(player, enemy) <= E->Range()))) || (QDagger != nullptr) && !GEntityList->Player()->IsCastingImportantSpell(&endtime)) && current - timer > 50 )
 			{
-				E->CastOnUnit(enemy);
+				if (dagger1 != nullptr)
+				{
+					int bound = enemy->BoundingRadius();
+					Vec3 enemyPos = enemy->GetPosition();
+					Vec3 dagger1Pos = dagger1->GetPosition();
+					Vec3 cast = Extend(enemyPos, dagger1Pos, (enemy->BoundingRadius()));
+					E->CastOnPosition(cast);
+				}
+				if (dagger2 != nullptr)
+				{
+					int bound = enemy->BoundingRadius();
+					Vec3 enemyPos = enemy->GetPosition();
+					Vec3 dagger2Pos = dagger2->GetPosition();
+					Vec3 cast = Extend(enemyPos, dagger2Pos, (enemy->BoundingRadius()));
+					E->CastOnPosition(cast);
+				}
+				if (dagger1 == nullptr && dagger2 == nullptr)
+				{
+					E->CastOnUnit(enemy);
+				}
 			}
 			if ((((dagger1 != nullptr && Distance(dagger1, enemy) <= 400 && Distance(player, enemy) > E->Range() && Distance(player, dagger1) <= E->Range()) || ((dagger2 != nullptr && Distance(dagger2, enemy) <= 400 && Distance(player, enemy) > E->Range() && Distance(player, dagger2) <= E->Range()))) || (QDagger != nullptr) && !GEntityList->Player()->IsCastingImportantSpell(&endtime)) && current - timer > 50)
 			{
@@ -495,7 +533,26 @@ void inline Combo4()
 		{
 			if (Distance(player, enemy) <= E->Range())
 			{
-				E->CastOnUnit(enemy);
+				if (dagger1 == nullptr && dagger2 == nullptr)
+				{
+					E->CastOnUnit(enemy);
+				}
+				if (dagger1 != nullptr)
+				{
+					int bound = enemy->BoundingRadius();
+					Vec3 enemyPos = enemy->GetPosition();
+					Vec3 dagger1Pos = dagger1->GetPosition();
+					Vec3 cast = Extend(enemyPos, dagger1Pos, (enemy->BoundingRadius()));
+					E->CastOnPosition(cast);
+				}
+				if (dagger2 != nullptr)
+				{
+					int bound = enemy->BoundingRadius();
+					Vec3 enemyPos = enemy->GetPosition();
+					Vec3 dagger2Pos = dagger2->GetPosition();
+					Vec3 cast = Extend(enemyPos, dagger2Pos, (enemy->BoundingRadius()));
+					E->CastOnPosition(cast);
+				}
 			}
 			if ((dagger1 != nullptr && Distance(enemy, player) > E->Range() && Distance(player, dagger1) <= E->Range() && Distance(enemy, dagger1) < Distance(player, enemy)) || (dagger2 != nullptr && Distance(enemy, player) > E->Range() && Distance(player, dagger2) <= E->Range()) && Distance(enemy, dagger2) < Distance(player, enemy))
 			{
