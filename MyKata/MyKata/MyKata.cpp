@@ -298,7 +298,10 @@ void inline Combo()
 			{
 				if (dagger1 == nullptr && dagger2 == nullptr)
 				{
-					E->CastOnUnit(enemy);
+					int bounde = enemy->BoundingRadius();
+					Vec3 enemyPose = enemy->GetPosition();
+					Vec3 caste = Extend(enemyPose, player->GetPosition(), -bounde);
+					E->CastOnPosition(caste);
 				}
 				if (dagger1 != nullptr)
 				{
@@ -406,7 +409,10 @@ void inline Combo2()
 				}
 				if (dagger1 == nullptr && dagger2 == nullptr)
 				{
-					E->CastOnUnit(enemy);
+					int bounde = enemy->BoundingRadius();
+					Vec3 enemyPose = enemy->GetPosition();
+					Vec3 caste = Extend(enemyPose, player->GetPosition(), -bounde);
+					E->CastOnPosition(caste);
 				}
 			}
 			if ((((dagger1 != nullptr && Distance(dagger1, enemy) <= 400 && Distance(player, enemy) > E->Range() && Distance(player, dagger1) <= E->Range()) || ((dagger2 != nullptr && Distance(dagger2, enemy) <= 400 && Distance(player, enemy) > E->Range() && Distance(player, dagger2) <= E->Range()))) || (QDagger != nullptr) && !GEntityList->Player()->IsCastingImportantSpell(&endtime)) && current - timer > 50)
@@ -557,7 +563,10 @@ void inline Combo4()
 			{
 				if (dagger1 == nullptr && dagger2 == nullptr)
 				{
-					E->CastOnUnit(enemy);
+					int bounde = enemy->BoundingRadius();
+					Vec3 enemyPose = enemy->GetPosition();
+					Vec3 caste = Extend(enemyPose, player->GetPosition(), -bounde);
+					E->CastOnPosition(caste);
 				}
 				if (dagger1 != nullptr)
 				{
