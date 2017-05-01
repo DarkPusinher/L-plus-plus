@@ -56,6 +56,8 @@ IMenuOption* LastQ;
 
 IMenu* Extras;
 IMenuOption* ComboModeChange;
+IMenuOption* KSModeChange;
+IMenuOption* RStop;
 
 ISpell2* Q;
 ISpell2* W;
@@ -82,9 +84,12 @@ float KeyPre;
 
 bool decider = false;
 std::vector<std::string> const& Names = {"Safe", "Medium", "Risky", "Very Risky"};
+std::vector<std::string> const& KSM = { "Safe", "Risky" };
 
 Vec3 dag1Pos;
 Vec3 dag2Pos;
+
+Vec3 LPos;
 
 void inline LoadSpells()
 {
@@ -143,6 +148,8 @@ void inline Menu()
 	Extras = Katarina->AddMenu("Extra");
 	{
 		ComboModeChange = Extras->AddKey("Change Combo Mode Key", 'T');
+		KSModeChange = Extras->AddSelection("KS Mode", 0, KSM);
+		RStop = Extras->CheckBox("Cancel R if No enemies in range", true);
 	}
 	DrawingMenu = Katarina->AddMenu("Drawings");
 	{
@@ -249,6 +256,21 @@ inline int ChangePriority()
 			KeyPre = GGame->Time() + 0.250;
 		}
 		return ComboMode;
+	}
+}
+
+void inline StopR()
+{
+	float endtime;
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 250);
+	if (GEntityList->Player()->IsCastingImportantSpell(&endtime) && CountEnemy(GEntityList->Player()->GetPosition(), R->Range()) == 0)
+	{
+		if (enemy != nullptr)
+		{
+			LPos = enemy->GetPosition();
+		}
+		Vec3 positions = Extend(GEntityList->Player()->GetPosition(), LPos, 50);
+		GOrbwalking->Orbwalk(GEntityList->Player(), positions);
 	}
 }
 
@@ -740,6 +762,7 @@ void inline Killsteal()
 	{
 		auto QDamage = GDamage->GetSpellDamage(GEntityList->Player(), Enemy, kSlotQ);
 		auto EDamage = GDamage->GetSpellDamage(GEntityList->Player(), Enemy, kSlotE);
+		auto AADamage = GDamage->GetAutoAttackDamage(GEntityList->Player(), Enemy, false);
 		auto passive = damages;
 
 		if (Enemy != nullptr && !Enemy->IsDead() & Enemy->IsValidTarget() && ComboStop->Enabled())
@@ -748,7 +771,7 @@ void inline Killsteal()
 			{
 				Q->CastOnTarget(Enemy);
 			}
-			if (KSE->Enabled() && E->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), E->Range()) && EDamage > Enemy->GetHealth())
+			if (KSE->Enabled() && E->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), E->Range()) && EDamage + AADamage > Enemy->GetHealth())
 			{
 				E->CastOnTarget(Enemy);
 			}
@@ -759,7 +782,42 @@ void inline Killsteal()
 			{
 				Q->CastOnTarget(Enemy);
 			}
-			if (KSE->Enabled() && E->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), E->Range()) && EDamage > Enemy->GetHealth() && !GEntityList->Player()->IsCastingImportantSpell(&endtime))
+			if (KSE->Enabled() && E->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), E->Range()) && EDamage + AADamage > Enemy->GetHealth() && !GEntityList->Player()->IsCastingImportantSpell(&endtime))
+			{
+				E->CastOnTarget(Enemy);
+			}
+		}
+	}
+}
+
+void inline Killsteal2()
+{
+	float endtime;
+	for (auto Enemy : GEntityList->GetAllHeros(false, true))
+	{
+		auto QDamage = GDamage->GetSpellDamage(GEntityList->Player(), Enemy, kSlotQ);
+		auto EDamage = GDamage->GetSpellDamage(GEntityList->Player(), Enemy, kSlotE);
+		auto AADamage = GDamage->GetAutoAttackDamage(GEntityList->Player(), Enemy, false);
+		auto passive = damages;
+
+		if (Enemy != nullptr && !Enemy->IsDead() & Enemy->IsValidTarget() && ComboStop->Enabled())
+		{
+			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage + AADamage > Enemy->GetHealth())
+			{
+				Q->CastOnTarget(Enemy);
+			}
+			if (KSE->Enabled() && E->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), E->Range()) && EDamage + QDamage + AADamage > Enemy->GetHealth())
+			{
+				E->CastOnTarget(Enemy);
+			}
+		}
+		if (Enemy != nullptr && !Enemy->IsDead() & Enemy->IsValidTarget() && !ComboStop->Enabled())
+		{
+			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage + AADamage > Enemy->GetHealth() && !GEntityList->Player()->IsCastingImportantSpell(&endtime))
+			{
+				Q->CastOnTarget(Enemy);
+			}
+			if (KSE->Enabled() && E->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), E->Range()) && EDamage + QDamage + AADamage > Enemy->GetHealth() && !GEntityList->Player()->IsCastingImportantSpell(&endtime))
 			{
 				E->CastOnTarget(Enemy);
 			}
@@ -769,11 +827,22 @@ void inline Killsteal()
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
+	if (RStop->Enabled())
+	{
+		StopR();
+	}
 	if (current - Rtime >= 100 && decider)
 	{
 		decider = false;
 	}
-	Killsteal();
+	if (KSModeChange->GetInteger() == 0)
+	{
+		Killsteal();
+	}
+	if (KSModeChange->GetInteger() == 1)
+	{
+		Killsteal2();
+	}
 	ChangePriority();
 
 	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed && !GGame->IsChatOpen())
