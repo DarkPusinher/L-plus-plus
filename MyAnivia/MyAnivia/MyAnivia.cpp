@@ -85,7 +85,7 @@ int ComboMode = 1;
 
 void inline LoadSpells()
 {
-	Q = GPluginSDK->CreateSpell2(kSlotQ, kLineCast, false, true, (kCollidesWithYasuoWall));
+	Q = GPluginSDK->CreateSpell2(kSlotQ, kLineCast, true, true, (kCollidesWithYasuoWall));
 	W = GPluginSDK->CreateSpell2(kSlotW, kCircleCast, false, false, (kCollidesWithNothing));
 	E = GPluginSDK->CreateSpell2(kSlotE, kTargetCast, true, false, kCollidesWithYasuoWall);
 	R = GPluginSDK->CreateSpell2(kSlotR, kCircleCast, false, true, (kCollidesWithNothing));
@@ -229,7 +229,7 @@ void RStop()
 void Combo()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -249,9 +249,14 @@ void Combo()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			Q->CastOnTarget(enemy, 6);
-			time = GGame->TickCount();
-			check = false;
+			AdvPredictionOutput predic;
+			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
+			if (predic.HitChance >= kHitChanceHigh)
+			{
+				Q->CastOnPosition(predic.CastPosition);
+				time = GGame->TickCount();
+				check = false;
+			}
 		}
 
 		if (player->IsValidTarget(enemy, player->AttackRange()) && E->IsReady() && ComboE->Enabled())
@@ -274,7 +279,7 @@ void Combo()
 void Combo2()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -294,9 +299,14 @@ void Combo2()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			Q->CastOnTarget(enemy, 5);
-			time = GGame->TickCount();
-			check = false;
+			AdvPredictionOutput predic;
+			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
+			if (predic.HitChance >= kHitChanceMedium)
+			{
+				Q->CastOnPosition(predic.CastPosition);
+				time = GGame->TickCount();
+				check = false;
+			}
 		}
 
 		if (player->IsValidTarget(enemy, player->AttackRange()) && E->IsReady() && ComboE->Enabled())
@@ -411,7 +421,7 @@ void KS()
 void Harrass()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -424,9 +434,14 @@ void Harrass()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && HarrassQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			Q->CastOnTarget(enemy, 6);
-			time = GGame->TickCount();
-			check = false;
+			AdvPredictionOutput predic;
+			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
+			if (predic.HitChance >= kHitChanceHigh)
+			{
+				Q->CastOnPosition(predic.CastPosition);
+				time = GGame->TickCount();
+				check = false;
+			}
 		}
 
 		if (player->IsValidTarget(enemy, player->AttackRange()) && E->IsReady() && HarrassE->Enabled())
@@ -449,7 +464,7 @@ void Harrass()
 void Harrass2()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -462,9 +477,14 @@ void Harrass2()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && HarrassQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			Q->CastOnTarget(enemy, 5);
-			time = GGame->TickCount();
-			check = false;
+			AdvPredictionOutput predic;
+			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
+			if (predic.HitChance >= kHitChanceMedium)
+			{
+				Q->CastOnPosition(predic.CastPosition);
+				time = GGame->TickCount();
+				check = false;
+			}
 		}
 
 		if (player->IsValidTarget(enemy, player->AttackRange()) && E->IsReady() && HarrassE->Enabled())
@@ -542,11 +562,11 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	{
 		checkFQ = true;
 	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ComboMode == 1)
+	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ChangePriority() == 1)
 	{
 		Combo();
 	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ComboMode == 0)
+	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ChangePriority() == 0)
 	{
 		Combo2();
 	}
