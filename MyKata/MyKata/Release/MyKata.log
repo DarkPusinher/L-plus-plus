@@ -1,0 +1,26 @@
+﻿  MyKata.cpp
+c:\users\ates\desktop\mykata\mykata\Geometry.h(64): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
+c:\users\ates\desktop\mykata\mykata\Extention.h(363): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+MyKata.cpp(241): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+MyKata.cpp(246): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+MyKata.cpp(251): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+MyKata.cpp(256): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+MyKata.cpp(266): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(305): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(313): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(354): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(393): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(401): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(449): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(520): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(564): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(572): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+MyKata.cpp(616): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+  PluginSDK.cpp
+     Creating library C:\Users\Ates\Desktop\MyKata\Release\MyKata.lib and object C:\Users\Ates\Desktop\MyKata\Release\MyKata.exp
+  Generating code
+c:\users\ates\desktop\mykata\mykata\mykata.cpp(260): warning C4715: 'ChangePriority': not all control paths return a value
+  All 326 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  MyKata.vcxproj -> C:\Users\Ates\Desktop\MyKata\Release\MyKata.dll
+  MyKata.vcxproj -> C:\Users\Ates\Desktop\MyKata\Release\MyKata.pdb (Full PDB)

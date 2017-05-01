@@ -802,7 +802,7 @@ void inline Killsteal2()
 
 		if (Enemy != nullptr && !Enemy->IsDead() & Enemy->IsValidTarget() && ComboStop->Enabled())
 		{
-			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage + AADamage > Enemy->GetHealth())
+			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage > Enemy->GetHealth())
 			{
 				Q->CastOnTarget(Enemy);
 			}
@@ -813,7 +813,7 @@ void inline Killsteal2()
 		}
 		if (Enemy != nullptr && !Enemy->IsDead() & Enemy->IsValidTarget() && !ComboStop->Enabled())
 		{
-			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage + AADamage > Enemy->GetHealth() && !GEntityList->Player()->IsCastingImportantSpell(&endtime))
+			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage > Enemy->GetHealth() && !GEntityList->Player()->IsCastingImportantSpell(&endtime))
 			{
 				Q->CastOnTarget(Enemy);
 			}
