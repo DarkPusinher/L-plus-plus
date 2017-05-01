@@ -44,6 +44,9 @@ IMenuOption* KSE;
 IMenu* DiscMenu;
 IMenuOption* RCancel;
 IMenuOption* QHitChance;
+IMenuOption* ComboAA;
+IMenuOption* ComboAAkey;
+IMenuOption* ComboAALevel;
 
 IMenu* RenderMenu;
 IMenuOption* RenderQ;
@@ -109,10 +112,10 @@ void inline Menu()
 	}
 	FarmMenu = Anivia->AddMenu("Farm");
 	{
-		//FarmQ = FarmMenu->CheckBox("Use Q in Farm", true);
+		FarmQ = FarmMenu->CheckBox("Use Q in Farm", true);
 		FarmE = FarmMenu->CheckBox("Use E in Farm", true);
 		FarmR = FarmMenu->CheckBox("Use R in Farm", true);
-		//FarmQMin = FarmMenu->AddFloat("Qfor # Minions", 1, 3, 2);
+		FarmQMin = FarmMenu->AddFloat("Qfor # Minions", 1, 3, 2);
 		FarmRMin = FarmMenu->AddFloat("R for # Minions",1 ,7 ,5);
 		FarmELast = FarmMenu->CheckBox("E Only for Last hit", true);
 	}
@@ -130,6 +133,10 @@ void inline Menu()
 	{
 		RCancel = DiscMenu->CheckBox("Cancel R if No minnions or enemies", true);
 		QHitChance = DiscMenu->AddKey("Q Hit Chance Changer", 'T');
+		ComboAALevel = DiscMenu->AddInteger("At what level disable AA", 1, 18, 6);
+		ComboAA = DiscMenu->CheckBox("Disable AA", true);
+		ComboAAkey = DiscMenu->AddKey("Disable key", 32);
+
 	}
 	RenderMenu = Anivia->AddMenu("Drawings");
 	{
@@ -222,7 +229,7 @@ void RStop()
 void Combo()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -267,7 +274,7 @@ void Combo()
 void Combo2()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -327,18 +334,18 @@ void Farm()
 					checkF = false;
 				}
 			}
-			//if (FarmQ->Enabled() && Q->IsReady() && Minion->IsValidTarget(GEntityList->Player(), Q->Range()))
-			//{
-			//	Vec3 casPos;
-			//	int Nhits;
-			//	GPrediction->FindBestCastPosition(Q->Range(), Q->Radius() + 20, false, true, false, casPos, Nhits, Q->GetDelay());
-			//	if (Nhits >= FarmQMin->GetFloat() && checkFQ == true)
-			//	{
-			//		Q->CastOnPosition(casPos);
-			//		timeFQ = GGame->TickCount();
-			//		checkFQ = false;
-			//	}
-			//}
+			if (FarmQ->Enabled() && Q->IsReady() && Minion->IsValidTarget(GEntityList->Player(), Q->Range()))
+			{
+				Vec3 casPos;
+				int Nhits;
+				GPrediction->FindBestCastPosition(Q->Range(), Q->Radius() + 20, false, true, false, casPos, Nhits, Q->GetDelay());
+				if (Nhits >= FarmQMin->GetFloat() && checkFQ == true)
+				{
+					Q->CastOnPosition(casPos);
+					timeFQ = GGame->TickCount();
+					checkFQ = false;
+				}
+			}
 			if (FarmE->Enabled() && !FarmELast->Enabled() && E->IsReady() && Minion->IsValidTarget(GEntityList->Player(), E->Range()))
 			{
 				E->CastOnUnit(Minion);
@@ -404,7 +411,7 @@ void KS()
 void Harrass()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -442,7 +449,7 @@ void Harrass()
 void Harrass2()
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range() + Q->Radius() + 15);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -497,6 +504,20 @@ inline int ChangePriority()
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
+	if (GetAsyncKeyState(ComboAAkey->GetInteger()))
+	{
+		auto level = GEntityList->Player()->GetLevel();
+		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && GEntityList->Player()->GetMana() > 100)
+		{
+			GOrbwalking->SetAttacksAllowed(false);
+		}
+	}
+	if (!GetAsyncKeyState(ComboAAkey->GetInteger()) || GEntityList->Player()->GetMana() < 100)
+	{
+		{
+			GOrbwalking->SetAttacksAllowed(true);
+		}
+	}
 	if (GGame->TickCount() - time >= 1000)
 	{
 		checkKQ = true;
@@ -532,7 +553,7 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear && !GGame->IsChatOpen())
 	{
 		Farm();
-		//autoQFarm();
+		autoQFarm();
 	}
 	if (GOrbwalking->GetOrbwalkingMode() == kModeLastHit && !GGame->IsChatOpen())
 	{
