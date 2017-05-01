@@ -145,7 +145,7 @@ void autoQ()
 {
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
 
-	if (AniviaQ != nullptr)
+	if (AniviaQ != nullptr && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
 		Qpos = AniviaQ->GetPosition();
 		if (Distance(Qpos, enemy->GetPosition()) <= Q->Radius() + 20)
