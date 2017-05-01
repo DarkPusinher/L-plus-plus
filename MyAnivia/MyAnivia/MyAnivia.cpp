@@ -205,6 +205,13 @@ void RStop()
 {
 	if (AniviaR != nullptr && RCancel->Enabled())
 	{
+		if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
+		{
+			if (CountEnemy(AniviaR->GetPosition(), 500) == 0)
+			{
+				R->CastOnPlayer();
+			}
+		}
 		if (CountEnemy(AniviaR->GetPosition(), 500) == 0 && CountMinions(AniviaR->GetPosition(), 500) == 0)
 		{
 			R->CastOnPlayer();
