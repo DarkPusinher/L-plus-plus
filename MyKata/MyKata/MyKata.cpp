@@ -278,7 +278,7 @@ void inline Combo()
 {
 	float endtime;
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 400);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 50);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -294,7 +294,7 @@ void inline Combo()
 
 		if (ComboE->Enabled() && E->IsReady() && player->IsValidTarget(enemy, E->Range() + 400) && !GEntityList->Player()->IsCastingImportantSpell(&endtime) && decider == false)
 		{
-			if (((dagger1 != nullptr) || (dagger2 != nullptr) || (QDagger != nullptr) || (WDagger != nullptr)) && current - timer > 50 && Distance(player, enemy) <= E->Range())
+			if (((dagger1 != nullptr) || (dagger2 != nullptr) || (QDagger != nullptr) || (WDagger != nullptr)) || W->IsReady() && current - timer > 50 && Distance(player, enemy) <= E->Range())
 			{
 				if (dagger1 == nullptr && dagger2 == nullptr)
 				{
@@ -373,7 +373,7 @@ void inline Combo2()
 {
 	float endtime;
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 400);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 50);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -389,7 +389,7 @@ void inline Combo2()
 
 		if (ComboE->Enabled() && E->IsReady() && player->IsValidTarget(enemy, E->Range() + 400) && !GEntityList->Player()->IsCastingImportantSpell(&endtime) && decider == false)
 		{
-			if ((((dagger1 != nullptr && Distance(dagger1, enemy) <= 350 && Distance(player, enemy) <= E->Range()) || ((dagger2 != nullptr && Distance(dagger2, enemy) <= 350 && Distance(player, enemy) <= E->Range()))) || (QDagger != nullptr) && !GEntityList->Player()->IsCastingImportantSpell(&endtime)) && current - timer > 50 )
+			if ((((dagger1 != nullptr && Distance(dagger1, enemy) <= 350 && Distance(player, enemy) <= E->Range()) || ((dagger2 != nullptr && Distance(dagger2, enemy) <= 350 && Distance(player, enemy) <= E->Range()))) || (QDagger != nullptr) || W->IsReady() && !GEntityList->Player()->IsCastingImportantSpell(&endtime)) && current - timer > 50 )
 			{
 				if (dagger1 != nullptr)
 				{
@@ -543,7 +543,7 @@ void inline Combo4()
 {
 	float endtime;
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 400);
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + 50);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
