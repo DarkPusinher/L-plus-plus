@@ -233,7 +233,7 @@ void Combo()
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
-		if (player->IsValidTarget(enemy, R->Range()) && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true)
+		if (player->IsValidTarget(enemy, R->Range()) && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true && (Q->IsReady() || E->IsReady()))
 		{
 			R->CastOnUnit(enemy);
 			timeR = GGame->TickCount();
@@ -283,7 +283,7 @@ void Combo2()
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
-		if (player->IsValidTarget(enemy, R->Range()) && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true)
+		if (player->IsValidTarget(enemy, R->Range()) && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true && (Q->IsReady() || E->IsReady()))
 		{
 			R->CastOnUnit(enemy);
 			timeR = GGame->TickCount();
