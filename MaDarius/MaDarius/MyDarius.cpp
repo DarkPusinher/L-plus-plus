@@ -232,7 +232,7 @@ void Combo()
 		{
 			Vec3 oout;
 			GPrediction->GetFutureUnitPosition(enemy, 80.f, true, oout);
-			if (Distance(player->GetPosition(), oout) <= E->Range())
+			if (Distance(player->GetPosition(), oout) <= E->Range() -50)
 			{
 				E->CastOnUnit(enemy);
 			}
@@ -241,7 +241,7 @@ void Combo()
 		{
 			Vec3 oout;
 			GPrediction->GetFutureUnitPosition(enemy, 80.f, true, oout);
-			if (Distance(player->GetPosition(), oout) <= E->Range() && Distance(enemy->GetPosition(), player->GetPosition()) > 300)
+			if (Distance(player->GetPosition(), oout) <= E->Range() - 50 && Distance(enemy->GetPosition(), player->GetPosition()) > 300)
 			{
 				E->CastOnUnit(enemy);
 			}
@@ -281,7 +281,7 @@ void Harass()
 		{
 			Vec3 oout;
 			GPrediction->GetFutureUnitPosition(enemy, 80.f, true, oout);
-			if (Distance(player->GetPosition(), oout) <= E->Range())
+			if (Distance(player->GetPosition(), oout) <= E->Range() - 50)
 			{
 				E->CastOnUnit(enemy);
 			}
@@ -290,7 +290,7 @@ void Harass()
 		{
 			Vec3 oout;
 			GPrediction->GetFutureUnitPosition(enemy, 80.f, true, oout);
-			if (Distance(player->GetPosition(), oout) <= E->Range() && Distance(enemy->GetPosition(), player->GetPosition()) > 300)
+			if (Distance(player->GetPosition(), oout) <= E->Range() - 50 && Distance(enemy->GetPosition(), player->GetPosition()) > 300)
 			{
 				E->CastOnUnit(enemy);
 			}
@@ -347,35 +347,38 @@ void Farm()
 
 void KS()
 {
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, E->Range());
+	auto enemies = GEntityList->GetAllHeros(false, true);
 	auto player = GEntityList->Player();
 
-	if (KSR->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, R->Range()))
+	for (auto enemy : enemies)
 	{
-		if (enemy->GetHealth() < RDamage() * 0.8)
+		if (KSR->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, R->Range()) && R->IsReady() && !enemy->HasBuff("judicatorintervention") && !enemy->HasBuff("UndyingRage") && !enemy->HasBuffOfType(BUFF_Invulnerability))
 		{
-			R->CastOnUnit(enemy);
+			if (enemy->GetHealth() < RDamage() * 0.8)
+			{
+				R->CastOnUnit(enemy);
+			}
 		}
-	}
-	if (KSQ->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, Q->Range()))
-	{
-		if (enemy->GetHealth() < GDamage->GetSpellDamage(player, enemy, kSlotQ))
+		if (KSQ->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && !enemy->HasBuff("judicatorintervention") && !enemy->HasBuff("UndyingRage") && !enemy->HasBuffOfType(BUFF_Invulnerability))
 		{
-			Q->CastOnUnit(player);
+			if (enemy->GetHealth() < GDamage->GetSpellDamage(player, enemy, kSlotQ))
+			{
+				Q->CastOnUnit(player);
+			}
 		}
-	}
-	if (KSW->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, W->Range()))
-	{
-		if (enemy->GetHealth() < GDamage->GetSpellDamage(player, enemy, kSlotW))
+		if (KSW->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, W->Range()) && W->IsReady() && !enemy->HasBuff("judicatorintervention") && !enemy->HasBuff("UndyingRage") && !enemy->HasBuffOfType(BUFF_Invulnerability))
 		{
-			W->CastOnUnit(player);
+			if (enemy->GetHealth() < GDamage->GetSpellDamage(player, enemy, kSlotW))
+			{
+				W->CastOnUnit(player);
+			}
 		}
-	}
-	if (KSE->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, E->Range()))
-	{
-		if (enemy->GetHealth() < GDamage->GetSpellDamage(player, enemy, kSlotE))
+		if (KSE->Enabled() && enemy != nullptr && enemy->IsHero() && player->IsValidTarget(enemy, E->Range()) && E->IsReady() && !enemy->HasBuff("judicatorintervention") && !enemy->HasBuff("UndyingRage") && !enemy->HasBuffOfType(BUFF_Invulnerability))
 		{
-			E->CastOnTarget(enemy, 5);
+			if (enemy->GetHealth() < GDamage->GetSpellDamage(player, enemy, kSlotE))
+			{
+				E->CastOnTarget(enemy, 5);
+			}
 		}
 	}
 }
