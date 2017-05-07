@@ -64,7 +64,7 @@ void inline LoadSpells()
 	Q->SetOverrideDelay(0.25f);
 	Q2 = GPluginSDK->CreateSpell2(kSlotQ, kLineCast, true, true, (kCollidesWithNothing));
 	Q2->SetOverrideRadius(50.f);
-	Q2->SetOverrideSpeed(1300.f);
+	Q2->SetOverrideSpeed(2600.f);
 	Q2->SetOverrideDelay(0.25f);
 	W = GPluginSDK->CreateSpell2(kSlotW, kTargetCast, false, false, (kCollidesWithNothing));
 	E = GPluginSDK->CreateSpell2(kSlotE, kTargetCast, false, false, kCollidesWithNothing);
