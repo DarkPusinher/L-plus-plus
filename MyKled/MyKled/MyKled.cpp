@@ -96,8 +96,8 @@ void inline Menu()
 	}
 	FarmMenu = Kled->AddMenu("Farm");
 	{
-		FarmQ = FarmMenu->CheckBox("Use Q in Harrass", true);
-		FarmE = FarmMenu->CheckBox("Use E in Harrass", true);
+		FarmQ = FarmMenu->CheckBox("Use Q in Farm", true);
+		FarmE = FarmMenu->CheckBox("Use E in Farm", true);
 		FarmQAA = FarmMenu->CheckBox("Use Q only for AA reset", true);
 	}
 	//LastHitMenu = Kled->AddMenu("LastHit");
@@ -276,7 +276,7 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 				E->CastOnUnit(hero);
 
 			}
-			if (!Q->IsReady() && !E->IsReady())
+			if ((!Q->IsReady() && !E->IsReady()) || (!ComboEAA->Enabled() && !Q->IsReady()) || (!ComboQAA->Enabled() && !E->IsReady()) || (!ComboEAA->Enabled() && !ComboQAA->Enabled()))
 			{
 				if (Ravenous_Hydra->IsOwned() && Ravenous_Hydra->IsReady() && !(Player->IsDead()))
 				{
@@ -313,7 +313,7 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 				E->CastOnUnit(hero);
 
 			}
-			if (!Q->IsReady() && !E->IsReady())
+			if (!Q->IsReady() && !E->IsReady() || (!HarassEAA->Enabled() && !Q->IsReady()) || (!HarassQAA->Enabled() && !E->IsReady()) || (!HarassEAA->Enabled() && !HarassQAA->Enabled()))
 			{
 				if (Ravenous_Hydra->IsOwned() && Ravenous_Hydra->IsReady() && !(Player->IsDead()))
 				{
@@ -345,7 +345,7 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 			{
 				Q->CastOnTarget(minion, 5);
 			}
-			if (!Q->IsReady())
+			if (!Q->IsReady() || !FarmQAA->Enabled())
 			{
 				if (Ravenous_Hydra->IsOwned() && Ravenous_Hydra->IsReady() && !(Player->IsDead()))
 				{
