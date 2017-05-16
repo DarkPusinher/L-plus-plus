@@ -4,7 +4,9 @@
 #include "cmath"
 #include "Geometry.h"
 #include "Extention.h"
+#include <sstream>
 #include <map>
+#include <string>
 #include <vector>
 
 PluginSetup("MyAnivia")
@@ -86,6 +88,8 @@ int ComboMode = 1;
 void inline LoadSpells()
 {
 	Q = GPluginSDK->CreateSpell2(kSlotQ, kLineCast, true, true, (kCollidesWithYasuoWall));
+	Q->SetOverrideDelay(0.25f);
+	Q->SetOverrideSpeed(850.f);
 	W = GPluginSDK->CreateSpell2(kSlotW, kCircleCast, false, false, (kCollidesWithNothing));
 	E = GPluginSDK->CreateSpell2(kSlotE, kTargetCast, true, false, kCollidesWithYasuoWall);
 	R = GPluginSDK->CreateSpell2(kSlotR, kCircleCast, false, true, (kCollidesWithNothing));
@@ -226,6 +230,25 @@ void RStop()
 	}
 }
 
+void autoQFull()
+{
+	auto player = GEntityList->Player();
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+
+	if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaR != nullptr)
+	{
+		AdvPredictionOutput predic;
+		AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
+		GPrediction->RunPrediction(&inpute, &predic);
+		if (predic.HitChance >= kHitChanceHigh)
+		{
+			Q->CastOnPosition(predic.CastPosition);
+			time = GGame->TickCount();
+			check = false;
+		}
+	}
+}
+
 void Combo()
 {
 	auto player = GEntityList->Player();
@@ -240,7 +263,16 @@ void Combo()
 			checkR = false;
 		}
 
-		if (player->IsValidTarget(enemy, W->Range() - 200) && W->IsReady() && ComboW->Enabled() && Q->IsReady() && E->IsReady())
+		if (player->IsValidTarget(enemy, W->Range() - 100) && Distance(enemy->GetPosition(), player->GetPosition()) > R->Range() && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true && (Q->IsReady() || E->IsReady()))
+		{
+			Vec3 enemyPos = enemy->GetPosition();
+			Vec3 cast = Extend(player->GetPosition(), enemyPos, R->Range());
+			R->CastOnPosition(cast);
+			timeR = GGame->TickCount();
+			checkR = false;
+		}
+
+		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && ComboW->Enabled() && (Q->IsReady() && E->IsReady()) || (R->IsReady() && E->IsReady()))
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(enemyPos, player->GetPosition(), -190);
@@ -250,7 +282,8 @@ void Combo()
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
 			AdvPredictionOutput predic;
-			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
+			AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
+			GPrediction->RunPrediction(&inpute, &predic);
 			if (predic.HitChance >= kHitChanceHigh)
 			{
 				Q->CastOnPosition(predic.CastPosition);
@@ -290,7 +323,16 @@ void Combo2()
 			checkR = false;
 		}
 
-		if (player->IsValidTarget(enemy, W->Range() - 200) && W->IsReady() && ComboW->Enabled() && Q->IsReady() && E->IsReady())
+		if (player->IsValidTarget(enemy, W->Range() - 100) && Distance(enemy->GetPosition(), player->GetPosition()) > R->Range() && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true && (Q->IsReady() || E->IsReady()))
+		{
+			Vec3 enemyPos = enemy->GetPosition();
+			Vec3 cast = Extend(player->GetPosition(), enemyPos, R->Range());
+			R->CastOnPosition(cast);
+			timeR = GGame->TickCount();
+			checkR = false;
+		}
+
+		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && ComboW->Enabled() && Q->IsReady() && E->IsReady() || (R->IsReady() && E->IsReady()))
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(enemyPos, player->GetPosition(), -190);
@@ -300,8 +342,9 @@ void Combo2()
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
 			AdvPredictionOutput predic;
-			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
-			if (predic.HitChance >= kHitChanceMedium)
+			AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
+			GPrediction->RunPrediction(&inpute, &predic);
+			if (predic.HitChance >= kHitChanceHigh)
 			{
 				Q->CastOnPosition(predic.CastPosition);
 				time = GGame->TickCount();
@@ -425,7 +468,7 @@ void Harrass()
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
-		if (player->IsValidTarget(enemy, W->Range() - 200) && W->IsReady() && HarrassW->Enabled() && Q->IsReady() && E->IsReady())
+		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && HarrassW->Enabled() && Q->IsReady() && E->IsReady())
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(enemyPos, player->GetPosition(), -190);
@@ -435,7 +478,8 @@ void Harrass()
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && HarrassQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
 			AdvPredictionOutput predic;
-			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
+			AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
+			GPrediction->RunPrediction(&inpute, &predic);
 			if (predic.HitChance >= kHitChanceHigh)
 			{
 				Q->CastOnPosition(predic.CastPosition);
@@ -468,7 +512,7 @@ void Harrass2()
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
-		if (player->IsValidTarget(enemy, W->Range() - 200) && W->IsReady() && HarrassW->Enabled() && Q->IsReady() && E->IsReady())
+		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && HarrassW->Enabled() && Q->IsReady() && E->IsReady())
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(enemyPos, player->GetPosition(), -190);
@@ -478,8 +522,9 @@ void Harrass2()
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && HarrassQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
 			AdvPredictionOutput predic;
-			Q->RunPrediction(enemy, true, kCollidesWithYasuoWall, &predic);
-			if (predic.HitChance >= kHitChanceMedium)
+			AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
+			GPrediction->RunPrediction(&inpute, &predic);
+			if (predic.HitChance >= kHitChanceHigh)
 			{
 				Q->CastOnPosition(predic.CastPosition);
 				time = GGame->TickCount();
@@ -524,6 +569,7 @@ inline int ChangePriority()
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
+	autoQFull();
 	if (GetAsyncKeyState(ComboAAkey->GetInteger()))
 	{
 		auto level = GEntityList->Player()->GetLevel();
@@ -546,7 +592,7 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	{
 		checkKR = true;
 	}
-	if (GGame->TickCount() - time >= 1000)
+	if (GGame->TickCount() - time >= 2500)
 	{
 		check = true;
 	}
@@ -591,6 +637,7 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	{
 		r = 0;
 	}
+
 	RStop();
 	autoQ();
 	KS();
