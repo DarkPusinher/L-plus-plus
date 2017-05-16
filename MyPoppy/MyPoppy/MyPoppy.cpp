@@ -104,8 +104,8 @@ void inline Menu()
 
 	KSMenu = Poppy->AddMenu("KS");
 	{
-		KSQ = FarmMenu->CheckBox("Use Q for KS", true);
-		KSE = FarmMenu->CheckBox("Use E for KS", true);
+		KSQ = KSMenu->CheckBox("Use Q for KS", true);
+		KSE = KSMenu->CheckBox("Use E for KS", true);
 	}
 
 	Extra = Poppy->AddMenu("Extra");
@@ -299,14 +299,21 @@ inline static int CountMinionsNearMe(IUnit* Source, float range)
 void Combo()
 {
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, R->Range());
+	auto enemies = GEntityList->GetAllHeros(false, true);
 	auto player = GEntityList->Player();
 
+	for (auto target : enemies)
+	{
+		if (target != nullptr && target->IsHero())
+		{
+			if (player->IsValidTarget(target, E->Range()) && ComboE->Enabled() && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+			{
+				E->CastOnUnit(target);
+			}
+		}
+	}
 	if (enemy != nullptr && enemy->IsHero())
 	{
-		if (player->IsValidTarget(enemy, E->Range()) && ComboE->Enabled() && E->IsReady() && (LineEquation(enemy, player, 425) == true || buildingCheck(enemy, player, 425)))
-		{
-			E->CastOnUnit(enemy);
-		}
 		if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget(enemy, Q->Range()) && ComboQAA->Enabled())
 		{
 			Vec3 yey;
