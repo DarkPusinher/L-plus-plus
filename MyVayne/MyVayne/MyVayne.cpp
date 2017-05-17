@@ -399,18 +399,12 @@ void  ELogic() // Unique
 Vec3 SmartQLogic()                 
 {
 	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, player->AttackRange());
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range() + player->AttackRange());
 	auto nexus = GEntityList->GetTeamNexus();
-	Vec3 post1;
-	Vec3 post2;
-	Vec3 pos1;
-	Vec3 pos2;
-	bool success = false;
-	bool check = false;
 	
-	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && QSmart->Enabled() && E->IsReady() && ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
+	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
 	{
-		if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()))
+		if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 		{
 			for (int i = 5; i < 360; i += 5)
 			{
@@ -418,23 +412,21 @@ Vec3 SmartQLogic()
 				Vec3 posQ1;
 				postQ1 = RotateAround(enemy->GetPosition(), player->GetPosition(), i);
 				posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
-				if (Q->IsReady() && QSmart->Enabled() && ComboQ->Enabled() && (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true))
+				if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
 				{
 					return posQ1;
-					success = true;
 					break;
 				}
 			}
 		}
-	}
-
-
-	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && QSmart->Enabled() && success == false)
-	{
-		if (EnemiesInRange(1100.f, player->GetPosition()) > 2)
+		if (EnemiesInRange(1500, player->GetPosition()) > 2)
 		{
 			if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2)
 			{
+				Vec3 post1;
+				Vec3 post2;
+				Vec3 pos1;
+				Vec3 pos2;
 				post1 = RotateAround(enemy->GetPosition(), player->GetPosition(), 90);
 				post2 = RotateAround(enemy->GetPosition(), player->GetPosition(), -90);
 				pos1 = Extend(player->GetPosition(), post1, Q->Range());
