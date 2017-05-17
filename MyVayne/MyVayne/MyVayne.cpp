@@ -15,27 +15,18 @@ IMenu* MainMenu;
 
 IMenu* ComboMenu;
 IMenuOption* QSmart;
-IMenuOption* MiscQHealth;
+IMenuOption* InvisH;
 IMenuOption* ComboQ;
+IMenuOption* Keeper;
+IMenuOption* AutoE;
+IMenuOption* AutoR;
+IMenuOption* AutoRX;
 
 IMenu* ExtraMenu;
-IMenuOption* AutoE;
-IMenuOption* EGapCloser;
-IMenuOption* SemiE;
+IMenuOption* EGap;
 IMenuOption* EInt;
 
-IMenu* RMenu;
-IMenuOption* AutoR;
-IMenuOption* AutoREnemies;
-
-IMenu* WMenu;
-IMenuOption* FocusW;
-
-IMenu* DiscMenu;
-IMenuOption* MiscQ;
-
-
-IMenu* DrawingsMenu;
+IMenu* RenderMenu;
 IMenuOption* DrawReady;
 IMenuOption* DrawQ;
 IMenuOption* DrawE;
@@ -53,20 +44,20 @@ void  DrawMenu()
 	ComboMenu = MainMenu->AddMenu("Combo");
 	ComboQ = ComboMenu->CheckBox("Use Q", true);
 	QSmart = ComboMenu->CheckBox("Smart Q", true);
-	MiscQ = ComboMenu->CheckBox("Dont Q while invis", true);
-	MiscQHealth = ComboMenu->AddFloat("Only Under X HP%", 0, 100, 30);
+	Keeper = ComboMenu->CheckBox("Keep invisibility", true);
+	InvisH = ComboMenu->AddFloat("Keep invisibilty if HP < %", 0, 100, 35);
 	AutoE = ComboMenu->CheckBox("Auto Condemn", true);
-	AutoR = ComboMenu->CheckBox("Auto R when enemies >= x", true);
-	AutoREnemies = ComboMenu->AddInteger("Enemies in range", 1, 5, 2);
+	AutoR = ComboMenu->CheckBox("Auto R if more than x", true);
+	AutoRX = ComboMenu->AddInteger("Enemies in range", 1, 5, 2);
 	
 	ExtraMenu = MainMenu->AddMenu("Extra");
-	EGapCloser = ExtraMenu->CheckBox("Auto Anti-GapCloser", true);
+	EGap = ExtraMenu->CheckBox("Auto Anti-GapCloser", true);
 	EInt = ExtraMenu->CheckBox("Auto interrupter", true);
 
-	DrawingsMenu = MainMenu->AddMenu("Drawing Settings");
-	DrawReady = DrawingsMenu->CheckBox("Draw Only Ready Spells", true);
-	DrawQ = DrawingsMenu->CheckBox("Draw Q", true);
-	DrawE = DrawingsMenu->CheckBox("Draw E", true);
+	RenderMenu = MainMenu->AddMenu("Drawing Settings");
+	DrawReady = RenderMenu->CheckBox("Draw Only Ready Spells", true);
+	DrawQ = RenderMenu->CheckBox("Draw Q", true);
+	DrawE = RenderMenu->CheckBox("Draw E", true);
 }
 
 void  LoadSpells()
@@ -467,13 +458,21 @@ Vec3 SmartQLogic()
 	}
 }
 
-void  Combo()
+void  RLogic()
 {
 	if (AutoR->Enabled() && R->IsReady())
 	{
-		if (EnemiesInRange(600, GEntityList->Player()->GetPosition()) >= AutoREnemies->GetInteger())
+		if (AutoRX->GetInteger() < EnemiesInRange(700, GEntityList->Player()->GetPosition()))
 		{
 			R->CastOnPlayer();
+		}
+		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
+		{
+			GOrbwalking->SetAttacksAllowed(false);
+		}
+		else if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
+		{
+			GOrbwalking->SetAttacksAllowed(true);
 		}
 	}
 }
@@ -495,27 +494,17 @@ PLUGIN_EVENT(void) OnGameUpdate()
 
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
-		Combo();
-		if (GEntityList->Player()->HasBuff("vaynetumblefade") && MiscQ->Enabled() && GEntityList->Player()->HealthPercent() < MiscQHealth->GetFloat())
-		{
-			GOrbwalking->SetAttacksAllowed(false);
-		}
-		else if(!GEntityList->Player()->HasBuff("vaynetumblefade"))
-		{
-			GOrbwalking->SetAttacksAllowed(true);
-		}
+		RLogic();
 	}
 }
 
-PLUGIN_EVENT(void) OnGapCloser(GapCloserSpell const& Args)
+PLUGIN_EVENT(void) OnGapCloser(GapCloserSpell const& champ)
 {
-	if (Args.Source != GEntityList->Player()
-		&& Args.Source->IsEnemy(GEntityList->Player())
-		&& GEntityList->Player()->IsValidTarget(Args.Source, E->Range() + Args.Source->BoundingRadius())
-		&& EGapCloser->Enabled() && E->IsReady()
-		&& (GEntityList->Player()->GetPosition() - Args.EndPosition).Length() < 300)
+	auto player = GEntityList->Player();
+	if (champ.Source != GEntityList->Player() && champ.Source != nullptr && player->IsValidTarget(champ.Source, E->Range()) && EGap->Enabled() && E->IsReady()
+		&& (Distance(player->GetPosition(), champ.EndPosition) < 350))
 	{
-		E->CastOnUnit(Args.Source);
+		E->CastOnUnit(champ.Source);
 	}
 }
 
@@ -535,13 +524,13 @@ PLUGIN_EVENT(void) OnRender()
 	}
 }
 
-PLUGIN_EVENT(void) OnInterruptible(InterruptibleSpell const& Args)
+PLUGIN_EVENT(void) OnInterruptible(InterruptibleSpell const& champ)
 {
-	if (EInt->Enabled() && Distance(GEntityList->Player(), Args.Source) < E->Range())
+	if (EInt->Enabled() && Distance(GEntityList->Player(), champ.Source) < E->Range())
 	{
 		if (E->IsReady())
 		{
-			E->CastOnUnit(Args.Source);
+			E->CastOnUnit(champ.Source);
 		}
 	}
 }
