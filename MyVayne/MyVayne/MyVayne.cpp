@@ -25,17 +25,25 @@ IMenuOption* AutoRX;
 IMenu* ExtraMenu;
 IMenuOption* EGap;
 IMenuOption* EInt;
+IMenuOption* LockW;
+IMenuOption* QModeChange;
 
 IMenu* RenderMenu;
 IMenuOption* DrawReady;
 IMenuOption* DrawQ;
 IMenuOption* DrawE;
+IMenuOption* DrawPriority;
 
 ISpell2* Q;
 ISpell2* W;
 ISpell2* E;
 ISpell2* R;
 
+IUnit* WStacked;
+
+std::vector<std::string> const& Names = { "Safe", "Risky" };
+int ComboMode = 1;
+float KeyPre = 0.f;
 
 void  DrawMenu()
 {
@@ -53,11 +61,14 @@ void  DrawMenu()
 	ExtraMenu = MainMenu->AddMenu("Extra");
 	EGap = ExtraMenu->CheckBox("Auto Anti-GapCloser", true);
 	EInt = ExtraMenu->CheckBox("Auto interrupter", true);
+	LockW = ExtraMenu->CheckBox("Lock on W target", true);
+	QModeChange = ExtraMenu->AddKey("Change Q Mode Key", 'T');
 
 	RenderMenu = MainMenu->AddMenu("Drawing Settings");
 	DrawReady = RenderMenu->CheckBox("Draw Only Ready Spells", true);
 	DrawQ = RenderMenu->CheckBox("Draw Q", true);
 	DrawE = RenderMenu->CheckBox("Draw E", true);
+	DrawPriority = RenderMenu->CheckBox("Draw QMode", true);
 }
 
 void  LoadSpells()
@@ -379,6 +390,24 @@ inline static int CountMinionsNearMe(IUnit* Source, float range)
 	return count;
 }
 
+inline int ChangePriority()
+{
+	if (GetAsyncKeyState(QModeChange->GetInteger()) && !GGame->IsChatOpen() && GGame->Time() > KeyPre)
+	{
+		if (ComboMode == 1)
+		{
+			ComboMode = 0;
+			KeyPre = GGame->Time() + 0.250;
+		}
+		else
+		{
+			ComboMode = 1;
+			KeyPre = GGame->Time() + 0.250;
+		}
+		return ComboMode;
+	}
+}
+
 void  ELogic() // Unique
 {
 	auto enemies = GEntityList->GetAllHeros(false, true);
@@ -398,55 +427,89 @@ void  ELogic() // Unique
 
 Vec3 SmartQLogic()                 
 {
-	auto player = GEntityList->Player();
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range() + player->AttackRange());
-	auto nexus = GEntityList->GetTeamNexus();
-	
-	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
+	if (ComboMode == 0)
 	{
-		if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
+		auto player = GEntityList->Player();
+		auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range() + player->AttackRange());
+		auto nexus = GEntityList->GetTeamNexus();
+
+		if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
 		{
-			for (int i = 5; i < 360; i += 5)
+			if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
-				Vec3 postQ1;
-				Vec3 posQ1;
-				postQ1 = RotateAround(enemy->GetPosition(), player->GetPosition(), i);
-				posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
-				if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
+				for (int i = 5; i < 360; i += 5)
 				{
-					return posQ1;
-					break;
+					Vec3 postQ1;
+					Vec3 posQ1;
+					postQ1 = RotateAround(enemy->GetPosition(), player->GetPosition(), i);
+					posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
+					if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
+					{
+						return posQ1;
+						break;
+					}
 				}
 			}
-		}
-		if (EnemiesInRange(1500, player->GetPosition()) > 2)
-		{
-			if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2)
+			if (EnemiesInRange(1500, player->GetPosition()) > 2)
 			{
-				Vec3 post1;
-				Vec3 post2;
-				Vec3 pos1;
-				Vec3 pos2;
-				post1 = RotateAround(enemy->GetPosition(), player->GetPosition(), 90);
-				post2 = RotateAround(enemy->GetPosition(), player->GetPosition(), -90);
-				pos1 = Extend(player->GetPosition(), post1, Q->Range());
-				pos2 = Extend(player->GetPosition(), post2, Q->Range());
-				if (Distance(pos1, nexus->GetPosition()) <= Distance(pos2, nexus->GetPosition()))
+				if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2)
 				{
-					return pos1;
+					Vec3 post1;
+					Vec3 post2;
+					Vec3 pos1;
+					Vec3 pos2;
+					post1 = RotateAround(enemy->GetPosition(), player->GetPosition(), 90);
+					post2 = RotateAround(enemy->GetPosition(), player->GetPosition(), -90);
+					pos1 = Extend(player->GetPosition(), post1, Q->Range());
+					pos2 = Extend(player->GetPosition(), post2, Q->Range());
+					if (Distance(pos1, nexus->GetPosition()) <= Distance(pos2, nexus->GetPosition()))
+					{
+						return pos1;
+					}
+					else
+						return pos2;
 				}
 				else
-					return pos2;
+					return GGame->CursorPosition();
 			}
 			else
 				return GGame->CursorPosition();
 		}
-		else
+		else if (ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && !QSmart->Enabled())
+		{
 			return GGame->CursorPosition();
+		}
 	}
-	else if (ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && !QSmart->Enabled())
+	if (ComboMode == 1)
 	{
-		return GGame->CursorPosition();
+		auto player = GEntityList->Player();
+		auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range() + player->AttackRange());
+		auto nexus = GEntityList->GetTeamNexus();
+
+		if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
+		{
+			if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
+			{
+				for (int i = 5; i < 360; i += 5)
+				{
+					Vec3 postQ1;
+					Vec3 posQ1;
+					postQ1 = RotateAround(enemy->GetPosition(), player->GetPosition(), i);
+					posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
+					if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
+					{
+						return posQ1;
+						break;
+					}
+				}
+			}
+			if(ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && QSmart->Enabled())
+				return GGame->CursorPosition();
+		}
+		else if (ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && !QSmart->Enabled())
+		{
+			return GGame->CursorPosition();
+		}
 	}
 }
 
@@ -484,9 +547,48 @@ PLUGIN_EVENT(void) OnGameUpdate()
 {
 	ELogic();
 
+	ChangePriority();
+
+	if (LockW->Enabled())
+	{
+		auto player = GEntityList->Player();
+		auto target = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, player->AttackRange());
+		auto enemies = GEntityList->GetAllHeros(false, true);
+		for (auto enemy : enemies)
+		{
+			if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && WStacked != nullptr)
+			{
+				if (player->IsValidTarget(enemy, player->AttackRange()) && enemy->HasBuff("VayneSilveredDebuff")
+					&& Distance(WStacked->GetPosition(), enemy->GetPosition()) < 50)
+				{
+					GOrbwalking->SetOverrideTarget(enemy);
+					break;
+				}
+			}
+			else
+				GOrbwalking->SetOverrideTarget(target);
+		}
+	}
+
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		RLogic();
+	}
+}
+
+PLUGIN_EVENT(void) OnCreateObject(IUnit* Source)
+{
+	if (Equals(Source->GetObjectName(), "vayne_base_W_ring2.troy"))
+	{
+		WStacked = Source;
+	}
+}
+
+PLUGIN_EVENT(void) OnDestroyObject(IUnit* Source)
+{
+	if (Equals(Source->GetObjectName(), "vayne_base_W_ring2.troy"))
+	{
+		WStacked = nullptr;
 	}
 }
 
@@ -502,6 +604,25 @@ PLUGIN_EVENT(void) OnGapCloser(GapCloserSpell const& champ)
 
 PLUGIN_EVENT(void) OnRender()
 {
+	if (DrawPriority->Enabled())
+	{
+		static IFont* pFont = nullptr;
+
+		if (pFont == nullptr)
+		{
+			pFont = GRender->CreateFont("Tahoma", 16.f, kFontWeightNormal);
+			pFont->SetOutline(true);
+			pFont->SetLocationFlags(kFontLocationNormal);
+		}
+		Vec2 pos;
+		if (GGame->Projection(GEntityList->Player()->GetPosition(), &pos))
+		{
+			std::string text = std::string(Names[ComboMode]);
+			Vec4 clr = Vec4(188, 255, 50, 255);
+			pFont->SetColor(clr);
+			pFont->Render(pos.x, pos.y, text.c_str());
+		}
+	}
 	if (DrawReady->Enabled())
 	{
 		if (Q->IsReady() && DrawQ->Enabled()) { GRender->DrawOutlinedCircle(GEntityList->Player()->GetPosition(), Vec4(255, 255, 0, 255), Q->Range()); }
@@ -534,6 +655,8 @@ PLUGIN_API void OnLoad(IPluginSDK* PluginSDK)
 	LoadSpells();
 	GEventManager->AddEventHandler(kEventOnGameUpdate, OnGameUpdate);
 	GEventManager->AddEventHandler(kEventOrbwalkAfterAttack, OnAfterAttack);
+	GEventManager->AddEventHandler(kEventOnCreateObject, OnCreateObject);
+	GEventManager->AddEventHandler(kEventOnDestroyObject, OnDestroyObject);
 	GEventManager->AddEventHandler(kEventOnGapCloser, OnGapCloser);
 	GEventManager->AddEventHandler(kEventOnInterruptible, OnInterruptible);
 	GEventManager->AddEventHandler(kEventOnRender, OnRender);
@@ -545,6 +668,8 @@ PLUGIN_API void OnUnload()
 	MainMenu->Remove();
 	GEventManager->RemoveEventHandler(kEventOnGameUpdate, OnGameUpdate);
 	GEventManager->RemoveEventHandler(kEventOrbwalkAfterAttack, OnAfterAttack);
+	GEventManager->RemoveEventHandler(kEventOnCreateObject, OnCreateObject);
+	GEventManager->RemoveEventHandler(kEventOnDestroyObject, OnDestroyObject);
 	GEventManager->RemoveEventHandler(kEventOnGapCloser, OnGapCloser);
 	GEventManager->RemoveEventHandler(kEventOnInterruptible, OnInterruptible);
 	GEventManager->RemoveEventHandler(kEventOnRender, OnRender);
