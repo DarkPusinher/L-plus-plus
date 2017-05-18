@@ -22,6 +22,7 @@ IMenuOption* EOnly;
 IMenuOption* AutoE;
 IMenuOption* AutoR;
 IMenuOption* AutoRX;
+IMenuOption* KeepRX;
 
 IMenu* ExtraMenu;
 IMenuOption* EGap;
@@ -46,6 +47,8 @@ IUnit* closestTurret;
 std::vector<std::string> const& Names = { "Safe", "Risky" };
 int ComboMode = 1;
 float KeyPre = 0.f;
+bool inkeep = false;
+int keeptimer;
 
 void  DrawMenu()
 {
@@ -60,6 +63,7 @@ void  DrawMenu()
 	EOnly = ComboMenu->CheckBox("E Only if combo or harrass mode", true);
 	AutoR = ComboMenu->CheckBox("Auto R if more than x", true);
 	AutoRX = ComboMenu->AddInteger("Enemies in range", 1, 5, 2);
+	KeepRX = ComboMenu->AddInteger("Keep invis in millisec", 1, 1000, 500);
 	
 	ExtraMenu = MainMenu->AddMenu("Extra");
 	EGap = ExtraMenu->CheckBox("Auto Anti-GapCloser", true);
@@ -564,14 +568,26 @@ void  RLogic()
 		{
 			R->CastOnPlayer();
 		}
-		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
-		{
-			GOrbwalking->SetAttacksAllowed(false);
-		}
-		else if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
-		{
-			GOrbwalking->SetAttacksAllowed(true);
-		}
+	}
+	if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
+	{
+		GOrbwalking->SetAttacksAllowed(false);
+	}
+	else if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
+	{
+		GOrbwalking->SetAttacksAllowed(true);
+	}
+
+	if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == false)
+	{
+		GOrbwalking->SetAttacksAllowed(false);
+		inkeep = true;
+		keeptimer = GGame->TickCount();
+	}
+	if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger() && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
+	{
+		GOrbwalking->SetAttacksAllowed(true);
+		inkeep = false;
 	}
 }
 
@@ -628,6 +644,26 @@ PLUGIN_EVENT(void) OnGameUpdate()
 		if (EOnly->Enabled())
 		{
 			ELogic();
+		}
+		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
+		{
+			GOrbwalking->SetAttacksAllowed(false);
+		}
+		else if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
+		{
+			GOrbwalking->SetAttacksAllowed(true);
+		}
+
+		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == false)
+		{
+			GOrbwalking->SetAttacksAllowed(false);
+			inkeep = true;
+			keeptimer = GGame->TickCount();
+		}
+		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger() && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
+		{
+			GOrbwalking->SetAttacksAllowed(true);
+			inkeep = false;
 		}
 	}
 }
