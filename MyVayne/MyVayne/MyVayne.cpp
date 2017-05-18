@@ -41,6 +41,7 @@ ISpell2* E;
 ISpell2* R;
 
 IUnit* WStacked;
+IUnit* closestTurret;
 
 std::vector<std::string> const& Names = { "Safe", "Risky" };
 int ComboMode = 1;
@@ -429,15 +430,26 @@ void  ELogic() // Unique
 
 Vec3 SmartQLogic()                 
 {
+	IUnit* temporar = GEntityList->GetEnemyNexus();
 	if (ComboMode == 0)
 	{
 		auto player = GEntityList->Player();
 		auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range() + player->AttackRange());
+		auto enemySafe = GTargetSelector->FindTarget(ClosestPriority, PhysicalDamage, Q->Range() + player->AttackRange());
 		auto nexus = GEntityList->GetTeamNexus();
-
-		if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
+		auto turrets = GEntityList->GetAllTurrets(true, false);
+		for (int m = 0; m < turrets.size(); m ++)
 		{
-			if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
+			if (Distance(turrets[m], GEntityList->Player()) < Distance(temporar, GEntityList->Player()) && !turrets[m]->IsDead())
+			{
+				temporar = turrets[m];
+				closestTurret = turrets[m];
+			}
+		}
+
+		if (enemySafe != nullptr && enemySafe->IsValidTarget() && enemySafe->IsHero() && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
+		{
+			if (player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
 				for (int i = 5; i < 360; i += 5)
 				{
@@ -454,26 +466,55 @@ Vec3 SmartQLogic()
 			}
 			if (EnemiesInRange(1500, player->GetPosition()) > 2)
 			{
-				if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2 && Distance(GGame->CursorPosition(), enemy->GetPosition()) < Distance(player->GetPosition(),enemy->GetPosition()))
+				if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2)
 				{
-					Vec3 post1;
-					Vec3 post2;
-					Vec3 pos1;
-					Vec3 pos2;
-					post1 = RotateAround(enemy->GetPosition(), player->GetPosition(), 90);
-					post2 = RotateAround(enemy->GetPosition(), player->GetPosition(), -90);
-					pos1 = Extend(player->GetPosition(), post1, Q->Range());
-					pos2 = Extend(player->GetPosition(), post2, Q->Range());
-					if (Distance(pos1, nexus->GetPosition()) <= Distance(pos2, nexus->GetPosition()))
+					std::vector<Vec3> temp;
+					for (int i = 5; i < 360; i += 5)
 					{
-						return pos1;
+						Vec3 posteQ1;
+						Vec3 poseQ1;
+						posteQ1 = RotateAround(enemySafe->GetPosition(), player->GetPosition(), i);
+						poseQ1 = Extend(player->GetPosition(), posteQ1, Q->Range());
+						if (Distance(poseQ1, enemySafe->GetPosition()) < player->AttackRange() - 100)
+						{
+							temp.push_back(poseQ1);
+						}
 					}
-					else
-						return pos2;
+					Vec3 tem = GEntityList->GetEnemyNexus()->GetPosition();
+					for (int y = 0; y < temp.size(); y++)
+					{
+						if (closestTurret != nullptr && Distance(tem, closestTurret->GetPosition()) > Distance(temp[y], closestTurret->GetPosition()))
+						{
+							tem = temp[y];
+						}
+					}
+					return tem;
 				}
 				else
 					return GGame->CursorPosition();
 			}
+			//if (EnemiesInRange(1500, player->GetPosition()) > 2)
+			//{
+			//	if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2 && Distance(GGame->CursorPosition(), enemy->GetPosition()) < Distance(player->GetPosition(),enemy->GetPosition()))
+			//	{
+			//		Vec3 post1;
+			//		Vec3 post2;
+			//		Vec3 pos1;
+			//		Vec3 pos2;
+			//		post1 = RotateAround(enemy->GetPosition(), player->GetPosition(), 90);
+			//		post2 = RotateAround(enemy->GetPosition(), player->GetPosition(), -90);
+			//		pos1 = Extend(player->GetPosition(), post1, Q->Range());
+			//		pos2 = Extend(player->GetPosition(), post2, Q->Range());
+			//		if (Distance(pos1, nexus->GetPosition()) <= Distance(pos2, nexus->GetPosition()))
+			//		{
+			//			return pos1;
+			//		}
+			//		else
+			//			return pos2;
+			//	}
+			//	else
+			//		return GGame->CursorPosition();
+			//}
 			else
 				return GGame->CursorPosition();
 		}
