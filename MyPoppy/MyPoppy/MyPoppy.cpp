@@ -58,8 +58,10 @@ Vec3 epos2;
 Vec3 spos2;
 
 bool checker = false;
+bool bugger = false;
 int time1;
 int time2;
+int timePas;
 
 void inline LoadSpells()
 {
@@ -397,6 +399,14 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 	if (source != Player || target == nullptr)
 		return;
 
+	if (bugger == true)
+	{
+		Vec3 mover = Extend(GEntityList->Player()->GetPosition(), GOrbwalking->GetLastTarget()->GetPosition(), 50);
+		GOrbwalking->SetAttacksAllowed(false);
+		timePas = GGame->TickCount();
+		bugger = false;
+	}
+
 	switch (GOrbwalking->GetOrbwalkingMode())
 	{
 	case kModeCombo:
@@ -513,9 +523,25 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 	}
 }
 
+PLUGIN_EVENT(void) OrbwalkBeforeAttack(IUnit* Source, IUnit* Target)
+{
+	if (Passive != nullptr)
+	{
+		bugger = true;
+	}
+}
+
 PLUGIN_EVENT(void) OnGameUpdate()
 {
 	KS();
+
+
+	if (bugger == false && (GGame->TickCount() - timePas) > (1000 / GEntityList->Player()->AttackSpeed()))
+	{
+		GOrbwalking->SetAttacksAllowed(true);
+	}
+
+
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen())
 	{
 		Combo();
@@ -593,6 +619,7 @@ PLUGIN_API void OnLoad(IPluginSDK* PluginSDK)
 	GEventManager->AddEventHandler(kEventOnGameUpdate, OnGameUpdate);
 	GEventManager->AddEventHandler(kEventOnCreateObject, OnCreateObject);
 	GEventManager->AddEventHandler(kEventOrbwalkAfterAttack, OnAfterAttack);
+	GEventManager->AddEventHandler(kEventOrbwalkBeforeAttack, OrbwalkBeforeAttack);
 	GEventManager->AddEventHandler(kEventOnDash, OnDash);
 	GEventManager->AddEventHandler(kEventOnInterruptible, OnInterruptible);
 	GEventManager->AddEventHandler(kEventOnDestroyObject, OnDestroyObject);
@@ -606,6 +633,7 @@ PLUGIN_API void OnUnload()
 	GEventManager->RemoveEventHandler(kEventOnGameUpdate, OnGameUpdate);
 	GEventManager->RemoveEventHandler(kEventOnCreateObject, OnCreateObject);
 	GEventManager->RemoveEventHandler(kEventOrbwalkAfterAttack, OnAfterAttack);
+	GEventManager->RemoveEventHandler(kEventOrbwalkBeforeAttack, OrbwalkBeforeAttack);
 	GEventManager->RemoveEventHandler(kEventOnDash, OnDash);
 	GEventManager->RemoveEventHandler(kEventOnInterruptible, OnInterruptible);
 	GEventManager->RemoveEventHandler(kEventOnDestroyObject, OnDestroyObject);
