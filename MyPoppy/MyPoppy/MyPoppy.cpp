@@ -578,7 +578,7 @@ PLUGIN_EVENT(void) OnInterruptible(InterruptibleSpell const& Args)
 {
 	if (EInt->Enabled() && Distance(GEntityList->Player(), Args.Source) < E->Range())
 	{
-		if (E->IsReady())
+		if (E->IsReady() && Args.Source != nullptr && Args.Source->IsValidTarget() && GEntityList->Player()->IsValidTarget(Args.Source, E->Range()) && Args.Source->IsHero())
 		{
 			E->CastOnUnit(Args.Source);
 		}
