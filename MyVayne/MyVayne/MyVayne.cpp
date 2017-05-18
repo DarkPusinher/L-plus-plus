@@ -18,6 +18,7 @@ IMenuOption* QSmart;
 IMenuOption* InvisH;
 IMenuOption* ComboQ;
 IMenuOption* Keeper;
+IMenuOption* EOnly;
 IMenuOption* AutoE;
 IMenuOption* AutoR;
 IMenuOption* AutoRX;
@@ -55,6 +56,7 @@ void  DrawMenu()
 	Keeper = ComboMenu->CheckBox("Keep invisibility", true);
 	InvisH = ComboMenu->AddFloat("Keep invisibilty if HP < %", 0, 100, 35);
 	AutoE = ComboMenu->CheckBox("Auto Condemn", true);
+	EOnly = ComboMenu->CheckBox("E Only if combo or harrass mode", true);
 	AutoR = ComboMenu->CheckBox("Auto R if more than x", true);
 	AutoRX = ComboMenu->AddInteger("Enemies in range", 1, 5, 2);
 	
@@ -417,7 +419,7 @@ void  ELogic() // Unique
 	{
 		if (target != nullptr && target->IsHero())
 		{
-			if (player->IsValidTarget(target, E->Range()) && AutoE->Enabled() && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+			if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
 			{
 				E->CastOnUnit(target);
 			}
@@ -545,8 +547,10 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* Source, IUnit* target)
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
-	ELogic();
-
+	if (AutoE->Enabled())
+	{
+		ELogic();
+	}
 	ChangePriority();
 
 	if (LockW->Enabled())
@@ -573,6 +577,17 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		RLogic();
+		if (EOnly->Enabled())
+		{
+			ELogic();
+		}
+	}
+	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
+	{
+		if (EOnly->Enabled())
+		{
+			ELogic();
+		}
 	}
 }
 
