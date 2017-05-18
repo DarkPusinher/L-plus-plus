@@ -454,7 +454,7 @@ Vec3 SmartQLogic()
 			}
 			if (EnemiesInRange(1500, player->GetPosition()) > 2)
 			{
-				if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2)
+				if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2 && Distance(GGame->CursorPosition(), enemy->GetPosition()) < Distance(player->GetPosition(),enemy->GetPosition()))
 				{
 					Vec3 post1;
 					Vec3 post2;
