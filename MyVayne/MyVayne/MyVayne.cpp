@@ -547,7 +547,7 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* Source, IUnit* target)
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
-	if (AutoE->Enabled())
+	if (AutoE->Enabled() && !EOnly->Enabled())
 	{
 		ELogic();
 	}
