@@ -412,9 +412,9 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 	case kModeCombo:
 		for (auto hero : heros)
 		{
-			if (ComboQAA->Enabled() && Q->IsReady() && (hero->GetPosition() - GEntityList->Player()->GetPosition()).Length() <= Q->Range() && Passive == nullptr)
+			if (ComboQAA->Enabled() && Q->IsReady() && Distance(hero->GetPosition(), GEntityList->Player()->GetPosition()) <= Q->Range())
 			{
-				if (Distance(GEntityList->Player()->GetPosition(), hero->GetPosition()) < 250)
+				if (Distance(GEntityList->Player()->GetPosition(), hero->GetPosition()) <= Q->Range())
 				{
 					Q->CastOnTarget(hero, 5);
 				}
@@ -449,9 +449,9 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 	case kModeMixed:
 		for (auto hero : heros)
 		{
-			if (HarassQAA->Enabled() && Q->IsReady() && (hero->GetPosition() - GEntityList->Player()->GetPosition()).Length() <= Q->Range() && Passive == nullptr)
+			if (HarassQAA->Enabled() && Q->IsReady() && (hero->GetPosition() - GEntityList->Player()->GetPosition()).Length() <= Q->Range())
 			{
-				if (Distance(GEntityList->Player()->GetPosition(), hero->GetPosition()) < 250)
+				if (Distance(GEntityList->Player()->GetPosition(), hero->GetPosition()) <= Q->Range())
 				{
 					Q->CastOnTarget(hero, 5);
 				}
@@ -484,7 +484,7 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* source, IUnit* target)
 		break;
 	case kModeLaneClear:
 		for (auto minion : GEntityList->GetAllMinions(false, true, true)) {
-			if (FarmQ->Enabled() && W->IsReady() && (minion->GetPosition() - GEntityList->Player()->GetPosition()).Length() < 250 && Passive == nullptr)
+			if (FarmQ->Enabled() && W->IsReady() && (minion->GetPosition() - GEntityList->Player()->GetPosition()).Length() <= Q->Range())
 			{
 				Vec3 posot;
 				int ehit;
@@ -592,7 +592,7 @@ PLUGIN_EVENT(void) OnDash(UnitDash* dash)
 		{
 			Vec3 stp = dash->StartPosition;
 			Vec3 enp = dash->EndPosition;
-			if (dash->Source->IsVisible() && !GNavMesh->IsPointGrass(stp) && Distance(enp, GEntityList->Player()->GetPosition()) < W->Range())
+			if (GEntityList->Player()->IsValidTarget(dash->Source, W->Range() + 400) && dash->Source->IsVisible() && !GNavMesh->IsPointGrass(stp) && Distance(enp, GEntityList->Player()->GetPosition()) < W->Range())
 			{
 				W->CastOnPlayer();
 			}
