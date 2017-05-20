@@ -484,7 +484,7 @@ Vec3 SmartQLogic()
 						Vec3 poseQ1;
 						posteQ1 = RotateAround(enemySafe->GetPosition(), player->GetPosition(), i);
 						poseQ1 = Extend(player->GetPosition(), posteQ1, Q->Range());
-						if (Distance(poseQ1, enemySafe->GetPosition()) < player->AttackRange() - 100)
+						if (Distance(poseQ1, enemySafe->GetPosition()) >= player->AttackRange() - 150 && Distance(poseQ1, enemy->GetPosition()) <= player->AttackRange() - 100)
 						{
 							temp.push_back(poseQ1);
 						}
@@ -547,7 +547,7 @@ Vec3 SmartQLogic()
 			}
 		}
 
-		if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
+		if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
 		{
 			if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
@@ -575,7 +575,7 @@ Vec3 SmartQLogic()
 						Vec3 poseQ1;
 						posteQ1 = RotateAround(enemy->GetPosition(), player->GetPosition(), i);
 						poseQ1 = Extend(player->GetPosition(), posteQ1, Q->Range());
-						if (Distance(poseQ1, enemy->GetPosition()) < player->AttackRange() - 100)
+						if (Distance(poseQ1, enemy->GetPosition()) >= player->AttackRange() - 150 && Distance(poseQ1, enemy->GetPosition()) <= player->AttackRange() - 100)
 						{
 							temp.push_back(poseQ1);
 						}
@@ -583,7 +583,7 @@ Vec3 SmartQLogic()
 					Vec3 tem = GEntityList->GetEnemyNexus()->GetPosition();
 					for (int y = 0; y < temp.size(); y++)
 					{
-						if (closestTurret != nullptr && Distance(tem, closestTurret->GetPosition()) > Distance(temp[y], closestTurret->GetPosition()))
+						if (closestTurret != nullptr && Distance(tem, closestTurret->GetPosition()) >= Distance(temp[y], closestTurret->GetPosition()))
 						{
 							tem = temp[y];
 						}
