@@ -58,7 +58,7 @@ void  DrawMenu()
 	ComboMenu = MainMenu->AddMenu("Combo");
 	ComboQ = ComboMenu->CheckBox("Q only AA resets", true);
 	QSmart = ComboMenu->CheckBox("Smart Q", true);
-	QAlways = ComboMenu->CheckBox("Q always", true);
+	//QAlways = ComboMenu->CheckBox("Q always", true);
 	Keeper = ComboMenu->CheckBox("Keep invisibility", true);
 	InvisH = ComboMenu->AddFloat("Keep invisibilty if HP < %", 0, 100, 35);
 	AutoE = ComboMenu->CheckBox("Auto Condemn", true);
@@ -667,13 +667,34 @@ void  RLogic()
 	}
 }
 
-void Combo()
-{
-	if (!ComboQ->Enabled() && QAlways->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
-	{
-		Q->CastOnPosition(SmartQLogic());
-	}
-}
+//void Combo()
+//{
+//	auto player = GEntityList->Player();
+//	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range() + player->AttackRange());
+//	auto enemySafe = GTargetSelector->FindTarget(ClosestPriority, PhysicalDamage, Q->Range() + player->AttackRange());
+//
+//	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
+//	{
+//		if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()))
+//		{
+//			if (!ComboQ->Enabled() && QAlways->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
+//			{
+//				Q->CastOnPosition(SmartQLogic());
+//			}
+//		}
+//	}
+//
+//	if (enemySafe != nullptr && enemySafe->IsValidTarget() && enemySafe->IsHero())
+//	{
+//		if (player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()))
+//		{
+//			if (!ComboQ->Enabled() && QAlways->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && ComboMode == 0)
+//			{
+//				Q->CastOnPosition(SmartQLogic());
+//			}
+//		}
+//	}
+//}
 
 PLUGIN_EVENT(void) OnAfterAttack(IUnit* Source, IUnit* target)
 {
@@ -718,8 +739,6 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		RLogic();
-
-		Combo();
 
 		if (EOnly->Enabled())
 		{
