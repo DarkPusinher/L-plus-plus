@@ -17,6 +17,7 @@ IMenu* ComboMenu;
 IMenuOption* QSmart;
 IMenuOption* InvisH;
 IMenuOption* ComboQ;
+IMenuOption* QAlways;
 IMenuOption* Keeper;
 IMenuOption* EOnly;
 IMenuOption* AutoE;
@@ -55,8 +56,9 @@ void  DrawMenu()
 	MainMenu = GPluginSDK->AddMenu("A-Series Vayne");
 
 	ComboMenu = MainMenu->AddMenu("Combo");
-	ComboQ = ComboMenu->CheckBox("Use Q", true);
+	ComboQ = ComboMenu->CheckBox("Q only AA resets", true);
 	QSmart = ComboMenu->CheckBox("Smart Q", true);
+	QAlways = ComboMenu->CheckBox("Q always", true);
 	Keeper = ComboMenu->CheckBox("Keep invisibility", true);
 	InvisH = ComboMenu->AddFloat("Keep invisibilty if HP < %", 0, 100, 35);
 	AutoE = ComboMenu->CheckBox("Auto Condemn", true);
@@ -456,7 +458,7 @@ Vec3 SmartQLogic()
 			}
 		}
 
-		if (enemySafe != nullptr && enemySafe->IsValidTarget() && enemySafe->IsHero() && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
+		if (enemySafe != nullptr && enemySafe->IsValidTarget() && enemySafe->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
 		{
 			if (player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
@@ -665,6 +667,14 @@ void  RLogic()
 	}
 }
 
+void Combo()
+{
+	if (!ComboQ->Enabled() && QAlways->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
+	{
+		Q->CastOnPosition(SmartQLogic());
+	}
+}
+
 PLUGIN_EVENT(void) OnAfterAttack(IUnit* Source, IUnit* target)
 {
 	if (Source == GEntityList->Player())
@@ -708,6 +718,9 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		RLogic();
+
+		Combo();
+
 		if (EOnly->Enabled())
 		{
 			ELogic();
