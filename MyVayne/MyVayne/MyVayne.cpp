@@ -571,7 +571,7 @@ void  ELogic() // Unique
 		{
 			if (target != nullptr && target->IsHero())
 			{
-				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 400) == true || buildingCheck(target, player, 400)))
 				{
 					E->CastOnUnit(target);
 				}
@@ -584,11 +584,11 @@ void  ELogic() // Unique
 		{
 			if (target != nullptr && target->IsHero())
 			{
-				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 400) == true || buildingCheck(target, player, 400)))
 				{
 					Vec3 outtababy;
-					GPrediction->GetFutureUnitPosition(target, E->GetDelay(), true, outtababy);
-					if (LineEquations1(player, outtababy, 425) || buildingCheck1(target, outtababy, player, 425) && Distance(player->GetPosition(), outtababy) <= E->Range())
+					GPrediction->GetFutureUnitPosition(target, 0.5f, true, outtababy);
+					if (LineEquations1(player, outtababy, 400) || buildingCheck1(target, outtababy, player, 400) && Distance(player->GetPosition(), outtababy) <= E->Range())
 					{
 						E->CastOnUnit(target);
 					}
