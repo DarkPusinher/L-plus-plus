@@ -30,6 +30,7 @@ IMenuOption* EGap;
 IMenuOption* EInt;
 IMenuOption* LockW;
 IMenuOption* QModeChange;
+IMenuOption* EMode;
 
 IMenu* RenderMenu;
 IMenuOption* DrawReady;
@@ -46,6 +47,7 @@ IUnit* WStacked;
 IUnit* closestTurret;
 
 std::vector<std::string> const& Names = { "Safe", "Medium", "Risky" };
+std::vector<std::string> const& ENames = { "Fast", "Slow" };
 int ComboMode = 1;
 float KeyPre = 0.f;
 bool inkeep = false;
@@ -72,6 +74,7 @@ void  DrawMenu()
 	EInt = ExtraMenu->CheckBox("Auto interrupter", true);
 	LockW = ExtraMenu->CheckBox("Lock on W target", true);
 	QModeChange = ExtraMenu->AddKey("Change Q Mode Key", 'T');
+	EMode = ExtraMenu->AddSelection("E Mode", 0, ENames);
 
 	RenderMenu = MainMenu->AddMenu("Drawing Settings");
 	DrawReady = RenderMenu->CheckBox("Draw Only Ready Spells", true);
@@ -192,7 +195,7 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 10 && Distance(colliPos, from) <= 425 && Distance(from, minionPos) < Distance(ToVec2(player->GetPosition()), minionPos))
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, minionPos) < Distance(ToVec2(player->GetPosition()), minionPos))
 		{
 			collision = true;
 			break;
@@ -209,7 +212,7 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 10 && Distance(colliPos, from) <= 425 && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
 		{
 			collision = true;
 			break;
@@ -224,7 +227,7 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos;
 	colliPos.Set(X, Y);
-	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 50 && Distance(colliPos, from) <= 425 && Distance(from, mnexusPos) < Distance(ToVec2(player->GetPosition()), mnexusPos))
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 50 && Distance(colliPos, from) <= distance && Distance(from, mnexusPos) < Distance(ToVec2(player->GetPosition()), mnexusPos))
 	{
 		collision = true;
 	}
@@ -237,7 +240,7 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos1;
 	colliPos1.Set(X, Y);
-	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 50 && Distance(colliPos1, from) <= 425 && Distance(from, enexusPos) < Distance(ToVec2(player->GetPosition()), enexusPos))
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 50 && Distance(colliPos1, from) <= distance && Distance(from, enexusPos) < Distance(ToVec2(player->GetPosition()), enexusPos))
 	{
 		collision = true;
 	}
@@ -268,7 +271,7 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 100 && Distance(colliPos, from) <= 425 && Distance(from, minionPos) < Distance(ToVec2(playerPosi), minionPos))
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, minionPos) < Distance(ToVec2(playerPosi), minionPos))
 		{
 			collision = true;
 			break;
@@ -285,7 +288,7 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 100 && Distance(colliPos, from) <= 425 && Distance(from, heroPos) < Distance(ToVec2(playerPosi), heroPos))
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(playerPosi), heroPos))
 		{
 			collision = true;
 			break;
@@ -300,7 +303,7 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos;
 	colliPos.Set(X, Y);
-	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 100 && Distance(colliPos, from) <= 425 && Distance(from, mnexusPos) < Distance(ToVec2(playerPosi), mnexusPos))
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, mnexusPos) < Distance(ToVec2(playerPosi), mnexusPos))
 	{
 		collision = true;
 	}
@@ -313,7 +316,7 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos1;
 	colliPos1.Set(X, Y);
-	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 100 && Distance(colliPos1, from) <= 425 && Distance(from, enexusPos) < Distance(ToVec2(playerPosi), enexusPos))
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 100 && Distance(colliPos1, from) <= distance && Distance(from, enexusPos) < Distance(ToVec2(playerPosi), enexusPos))
 	{
 		collision = true;
 	}
@@ -379,6 +382,141 @@ bool LineEquations(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance)
 	return wall;
 }
 
+bool LineEquations1(IUnit* player, Vec3 enemyPosi, float distance)
+{
+	bool wall;
+	Vec3 epos = enemyPosi;
+	Vec3 ppos = player->GetPosition();
+	Vec2 epo = ToVec2(epos);
+	Vec2 ppo = ToVec2(ppos);
+
+	float x1 = ppo.x;
+	float y1 = ppo.y;
+	float x2 = epo.x;
+	float y2 = epo.y;
+
+	float m = (y2 - y1) / (x2 - x1);
+	float c = y1 - m*x1;
+	Vec3 pos = Extend(enemyPosi, player->GetPosition(), -distance);
+	Vec2 checkPos;
+
+	if (pos.x > x2)
+	{
+		for (int i = x2; i <= pos.x; i++)
+		{
+			y2 = m*i + c;
+			checkPos.Set(i, y2);
+			Vec3 check = ToVec3(checkPos);
+			auto flags = GNavMesh->GetCollisionFlagsForPoint(check);
+			if (flags == kBuildingMesh || flags == kWallMesh)
+			{
+				wall = true;
+				break;
+			}
+			else
+			{
+				wall = false;
+			}
+		}
+	}
+	if (pos.x < x2)
+	{
+		for (int i = x2; i >= pos.x; i--)
+		{
+			y2 = m*i + c;
+			checkPos.Set(i, y2);
+			Vec3 check = ToVec3(checkPos);
+			auto flags = GNavMesh->GetCollisionFlagsForPoint(check);
+			if (flags == kBuildingMesh || flags == kWallMesh)
+			{
+				wall = true;
+				break;
+			}
+			else
+			{
+				wall = false;
+			}
+		}
+	}
+	return wall;
+}
+
+bool buildingCheck1(IUnit* enemy, Vec3 enemyPosi, IUnit* player, float distance)
+{
+	auto collision = false;
+	Vec3 porte = Extend(enemyPosi, player->GetPosition(), -distance);
+	Vec2 from = ToVec2(enemyPosi);
+	Vec2 to = ToVec2(porte);
+	float m = ((to.y - from.y) / (to.x - from.x));
+	float X;
+	float Y;
+	float m2 = (-(to.x - from.x) / (to.y - from.y));
+	auto minions = GEntityList->GetAllTurrets(true, true);
+	auto heros = GEntityList->GetAllInhibitors(true, true);
+	auto mnexus = GEntityList->GetTeamNexus();
+	auto enexus = GEntityList->GetEnemyNexus();
+	for (auto minion : minions)
+	{
+		Vec3 minionP = minion->GetPosition();
+		Vec2 minionPos = ToVec2(minionP);
+		float px = minionPos.x;
+		float py = minionPos.y;
+		X = ((m2*px) - (from.x*m) + (from.y - py)) / (m2 - m);
+		Y = m * (X - from.x) + from.y;
+		Vec2 colliPos;
+		colliPos.Set(X, Y);
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, minionPos) < Distance(ToVec2(player->GetPosition()), minionPos))
+		{
+			collision = true;
+			break;
+		}
+	}
+	for (auto hero : heros)
+	{
+		Vec3 heroP;
+		heroP = hero->GetPosition();
+		Vec2 heroPos = ToVec2(heroP);
+		float herox = heroPos.x;
+		float heroy = heroPos.y;
+		X = ((m2*herox) - (from.x*m) + (from.y - heroy)) / (m2 - m);
+		Y = m * (X - from.x) + from.y;
+		Vec2 colliPos;
+		colliPos.Set(X, Y);
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
+		{
+			collision = true;
+			break;
+		}
+	}
+	Vec3 mnexusP;
+	mnexusP = mnexus->GetPosition();
+	Vec2 mnexusPos = ToVec2(mnexusP);
+	float mnexusx = mnexusPos.x;
+	float mnexusy = mnexusPos.y;
+	X = ((m2*mnexusx) - (from.x*m) + (from.y - mnexusy)) / (m2 - m);
+	Y = m * (X - from.x) + from.y;
+	Vec2 colliPos;
+	colliPos.Set(X, Y);
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 50 && Distance(colliPos, from) <= distance && Distance(from, mnexusPos) < Distance(ToVec2(player->GetPosition()), mnexusPos))
+	{
+		collision = true;
+	}
+	Vec3 enexusP;
+	enexusP = enexus->GetPosition();
+	Vec2 enexusPos = ToVec2(enexusP);
+	float enexusx = enexusPos.x;
+	float enexusy = enexusPos.y;
+	X = ((m2*enexusx) - (from.x*m) + (from.y - enexusy)) / (m2 - m);
+	Y = m * (X - from.x) + from.y;
+	Vec2 colliPos1;
+	colliPos1.Set(X, Y);
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 50 && Distance(colliPos1, from) <= distance && Distance(from, enexusPos) < Distance(ToVec2(player->GetPosition()), enexusPos))
+	{
+		collision = true;
+	}
+	return collision;
+}
+
 inline static int CountMinionsNearMe(IUnit* Source, float range)
 {
 	auto minion = GEntityList->GetAllMinions(false, true, true);
@@ -427,13 +565,34 @@ void  ELogic() // Unique
 	auto enemies = GEntityList->GetAllHeros(false, true);
 	auto player = GEntityList->Player();
 
-	for (auto target : enemies)
+	if (EMode->GetInteger() == 0)
 	{
-		if (target != nullptr && target->IsHero())
+		for (auto target : enemies)
 		{
-			if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+			if (target != nullptr && target->IsHero())
 			{
-				E->CastOnUnit(target);
+				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+				{
+					E->CastOnUnit(target);
+				}
+			}
+		}
+	}
+	if (EMode->GetInteger() == 1)
+	{
+		for (auto target : enemies)
+		{
+			if (target != nullptr && target->IsHero())
+			{
+				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 425) == true || buildingCheck(target, player, 425)))
+				{
+					Vec3 outtababy;
+					GPrediction->GetFutureUnitPosition(target, E->GetDelay(), true, outtababy);
+					if (LineEquations1(player, outtababy, 425) || buildingCheck1(target, outtababy, player, 425) && Distance(player->GetPosition(), outtababy) <= E->Range())
+					{
+						E->CastOnUnit(target);
+					}
+				}
 			}
 		}
 	}
