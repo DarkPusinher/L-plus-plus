@@ -619,7 +619,7 @@ Vec3 SmartQLogic()
 
 		if (enemySafe != nullptr && enemySafe->IsValidTarget() && enemySafe->IsHero() && ComboQ->Enabled() && QSmart->Enabled() && Q->IsReady())
 		{
-			if (player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
+			if (player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
 				for (int i = 5; i < 360; i += 5)
 				{
@@ -645,10 +645,14 @@ Vec3 SmartQLogic()
 						Vec3 poseQ1;
 						posteQ1 = RotateAround(enemySafe->GetPosition(), player->GetPosition(), i);
 						poseQ1 = Extend(player->GetPosition(), posteQ1, Q->Range());
-						if (Distance(poseQ1, enemySafe->GetPosition()) >= player->AttackRange() - 150 && Distance(poseQ1, enemy->GetPosition()) <= player->AttackRange() - 100)
+						if (Distance(poseQ1, enemySafe->GetPosition()) >= player->AttackRange() - 150 && Distance(poseQ1, enemySafe->GetPosition()) <= player->AttackRange() - 100 && !GNavMesh->IsPointWall(poseQ1))
 						{
 							temp.push_back(poseQ1);
 						}
+					}
+					if (temp.size() == 0)
+					{
+						return Extend(player->GetPosition(), enemySafe->GetPosition(), -450);
 					}
 					Vec3 tem = GEntityList->GetEnemyNexus()->GetPosition();
 					for (int y = 0; y < temp.size(); y++)
@@ -671,28 +675,7 @@ Vec3 SmartQLogic()
 			return GGame->CursorPosition();
 		}
 	}
-	//if (EnemiesInRange(1500, player->GetPosition()) > 2)
-	//{
-	//	if (EnemiesInRange(player->AttackRange() + 100, player->GetPosition()) >= 2 && Distance(GGame->CursorPosition(), enemy->GetPosition()) < Distance(player->GetPosition(),enemy->GetPosition()))
-	//	{
-	//		Vec3 post1;
-	//		Vec3 post2;
-	//		Vec3 pos1;
-	//		Vec3 pos2;
-	//		post1 = RotateAround(enemy->GetPosition(), player->GetPosition(), 90);
-	//		post2 = RotateAround(enemy->GetPosition(), player->GetPosition(), -90);
-	//		pos1 = Extend(player->GetPosition(), post1, Q->Range());
-	//		pos2 = Extend(player->GetPosition(), post2, Q->Range());
-	//		if (Distance(pos1, nexus->GetPosition()) <= Distance(pos2, nexus->GetPosition()))
-	//		{
-	//			return pos1;
-	//		}
-	//		else
-	//			return pos2;
-	//	}
-	//	else
-	//		return GGame->CursorPosition();
-	//}
+
 	if (ComboMode == 1)
 	{
 		auto player = GEntityList->Player();
@@ -736,10 +719,14 @@ Vec3 SmartQLogic()
 						Vec3 poseQ1;
 						posteQ1 = RotateAround(enemy->GetPosition(), player->GetPosition(), i);
 						poseQ1 = Extend(player->GetPosition(), posteQ1, Q->Range());
-						if (Distance(poseQ1, enemy->GetPosition()) >= player->AttackRange() - 150 && Distance(poseQ1, enemy->GetPosition()) <= player->AttackRange() - 100)
+						if (Distance(poseQ1, enemy->GetPosition()) >= player->AttackRange() - 150 && Distance(poseQ1, enemy->GetPosition()) <= player->AttackRange() - 100 && !GNavMesh->IsPointWall(poseQ1))
 						{
 							temp.push_back(poseQ1);
 						}
+					}
+					if (temp.size() == 0)
+					{
+						return Extend(player->GetPosition(), enemy->GetPosition(), -450);
 					}
 					Vec3 tem = GEntityList->GetEnemyNexus()->GetPosition();
 					for (int y = 0; y < temp.size(); y++)
