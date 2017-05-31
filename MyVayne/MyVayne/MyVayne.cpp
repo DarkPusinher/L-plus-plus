@@ -587,7 +587,7 @@ void  ELogic() // Unique
 				if (player->IsValidTarget(target, E->Range()) && E->IsReady() && (LineEquation(target, player, 400) == true || buildingCheck(target, player, 400)))
 				{
 					Vec3 outtababy;
-					GPrediction->GetFutureUnitPosition(target, 0.5f, true, outtababy);
+					GPrediction->GetFutureUnitPosition(target, 0.2f, true, outtababy);
 					if (LineEquations1(player, outtababy, 400) || buildingCheck1(target, outtababy, player, 400) && Distance(player->GetPosition(), outtababy) <= E->Range())
 					{
 						E->CastOnUnit(target);
