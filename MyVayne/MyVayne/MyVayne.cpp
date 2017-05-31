@@ -650,9 +650,13 @@ Vec3 SmartQLogic()
 							temp.push_back(poseQ1);
 						}
 					}
-					if (temp.size() == 0)
+					if (temp.size() == 0 && Distance(enemySafe->GetPosition(), player->GetPosition()) < 300)
 					{
 						return Extend(player->GetPosition(), enemySafe->GetPosition(), -450);
+					}
+					else if (temp.size() == 0 && Distance(enemySafe->GetPosition(), player->GetPosition()) < 300)
+					{
+						return GGame->CursorPosition();
 					}
 					Vec3 tem = GEntityList->GetEnemyNexus()->GetPosition();
 					for (int y = 0; y < temp.size(); y++)
@@ -724,9 +728,13 @@ Vec3 SmartQLogic()
 							temp.push_back(poseQ1);
 						}
 					}
-					if (temp.size() == 0)
+					if (temp.size() == 0 && Distance(enemy->GetPosition(), player->GetPosition()) < 300)
 					{
 						return Extend(player->GetPosition(), enemy->GetPosition(), -450);
+					}
+					else if (temp.size() == 0 && Distance(enemy->GetPosition(), player->GetPosition()) < 300)
+					{
+						return GGame->CursorPosition();
 					}
 					Vec3 tem = GEntityList->GetEnemyNexus()->GetPosition();
 					for (int y = 0; y < temp.size(); y++)
@@ -855,6 +863,11 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* Source, IUnit* target)
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
+	if (!GEntityList->Player()->HasBuff("vaynetumblefade") || GEntityList->Player()->IsDead())
+	{
+		GOrbwalking->SetAttacksAllowed(true);
+	}
+
 	if (AutoE->Enabled() && !EOnly->Enabled())
 	{
 		ELogic();
