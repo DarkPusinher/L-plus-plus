@@ -50,6 +50,7 @@ std::vector<std::string> const& Names = { "Safe", "Medium", "Risky" };
 std::vector<std::string> const& ENames = { "Fast", "Slow" };
 int ComboMode = 1;
 float KeyPre = 0.f;
+float kep = 0.f;
 bool inkeep = false;
 int keeptimer;
 
@@ -790,7 +791,7 @@ Vec3 SmartQLogic()
 	}
 }
 
-void  RLogic()
+void  AutoRLogic()
 {
 	if (AutoR->Enabled() && R->IsReady())
 	{
@@ -799,11 +800,15 @@ void  RLogic()
 			R->CastOnPlayer();
 		}
 	}
+}
+
+void RKeepLogic()
+{
 	if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
 	{
 		GOrbwalking->SetAttacksAllowed(false);
 	}
-	else if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
+	if (!GEntityList->Player()->HasBuff("vaynetumblefade") || GEntityList->Player()->IsDead())
 	{
 		GOrbwalking->SetAttacksAllowed(true);
 	}
@@ -812,9 +817,9 @@ void  RLogic()
 	{
 		GOrbwalking->SetAttacksAllowed(false);
 		inkeep = true;
-		keeptimer = GGame->TickCount();
+		keeptimer = GGame->TickCount() + 1;
 	}
-	if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger() && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
+	if (Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger() && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
 	{
 		GOrbwalking->SetAttacksAllowed(true);
 		inkeep = false;
@@ -863,16 +868,13 @@ PLUGIN_EVENT(void) OnAfterAttack(IUnit* Source, IUnit* target)
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
-	if (!GEntityList->Player()->HasBuff("vaynetumblefade") || GEntityList->Player()->IsDead())
-	{
-		GOrbwalking->SetAttacksAllowed(true);
-	}
-
 	if (AutoE->Enabled() && !EOnly->Enabled())
 	{
 		ELogic();
 	}
 	ChangePriority();
+
+	RKeepLogic();
 
 	if (LockW->Enabled())
 	{
@@ -897,7 +899,7 @@ PLUGIN_EVENT(void) OnGameUpdate()
 
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
-		RLogic();
+		AutoRLogic();
 
 		if (EOnly->Enabled())
 		{
@@ -909,26 +911,6 @@ PLUGIN_EVENT(void) OnGameUpdate()
 		if (EOnly->Enabled())
 		{
 			ELogic();
-		}
-		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
-		{
-			GOrbwalking->SetAttacksAllowed(false);
-		}
-		else if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
-		{
-			GOrbwalking->SetAttacksAllowed(true);
-		}
-
-		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == false)
-		{
-			GOrbwalking->SetAttacksAllowed(false);
-			inkeep = true;
-			keeptimer = GGame->TickCount();
-		}
-		if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger() && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
-		{
-			GOrbwalking->SetAttacksAllowed(true);
-			inkeep = false;
 		}
 	}
 }
