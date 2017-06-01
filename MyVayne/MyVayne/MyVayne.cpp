@@ -15,7 +15,7 @@ IMenu* MainMenu;
 
 IMenu* ComboMenu;
 IMenuOption* QSmart;
-IMenuOption* InvisH;
+//IMenuOption* InvisH;
 IMenuOption* ComboQ;
 IMenuOption* QAlways;
 IMenuOption* Keeper;
@@ -63,7 +63,7 @@ void  DrawMenu()
 	QSmart = ComboMenu->CheckBox("Smart Q", true);
 	//QAlways = ComboMenu->CheckBox("Q always", true);
 	Keeper = ComboMenu->CheckBox("Keep invisibility", true);
-	InvisH = ComboMenu->AddFloat("Keep invisibilty if HP < %", 0, 100, 35);
+	//InvisH = ComboMenu->AddFloat("Keep invisibilty if HP < %", 0, 100, 35);
 	AutoE = ComboMenu->CheckBox("Auto Condemn", true);
 	EOnly = ComboMenu->CheckBox("E Only if combo or harrass mode", true);
 	AutoR = ComboMenu->CheckBox("Auto R if more than x", true);
@@ -804,10 +804,10 @@ void  AutoRLogic()
 
 void RKeepLogic()
 {
-	if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
-	{
-		GOrbwalking->SetAttacksAllowed(false);
-	}
+	//if (GEntityList->Player()->HasBuff("vaynetumblefade") && Keeper->Enabled() && GEntityList->Player()->HealthPercent() < InvisH->GetFloat())
+	//{
+	//	GOrbwalking->SetAttacksAllowed(false);
+	//}
 	if (!GEntityList->Player()->HasBuff("vaynetumblefade") || GEntityList->Player()->IsDead())
 	{
 		GOrbwalking->SetAttacksAllowed(true);
@@ -819,7 +819,7 @@ void RKeepLogic()
 		inkeep = true;
 		keeptimer = GGame->TickCount() + 1;
 	}
-	if (Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger() && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
+	if (Keeper->Enabled() && inkeep == true && GGame->TickCount() - keeptimer > KeepRX->GetInteger())// && GEntityList->Player()->HealthPercent() > InvisH->GetFloat())
 	{
 		GOrbwalking->SetAttacksAllowed(true);
 		inkeep = false;
