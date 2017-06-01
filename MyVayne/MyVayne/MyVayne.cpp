@@ -808,7 +808,7 @@ void RKeepLogic()
 	//{
 	//	GOrbwalking->SetAttacksAllowed(false);
 	//}
-	if (!GEntityList->Player()->HasBuff("vaynetumblefade") || GEntityList->Player()->IsDead())
+	if (!GEntityList->Player()->HasBuff("vaynetumblefade"))
 	{
 		GOrbwalking->SetAttacksAllowed(true);
 	}
