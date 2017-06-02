@@ -122,7 +122,7 @@ void  DrawMenu()
 	{
 		if (target != nullptr)
 		{
-			std::string GapMenu = "Anti Gapcloser if enemy Champion: " + std::string(target->ChampionName());
+			std::string GapMenu = "Anti-Gap for: " + std::string(target->ChampionName());
 			GapTarget[target->GetNetworkId()] = ExtraMenu->CheckBox(GapMenu.c_str(), target->IsMelee());
 		}
 	}
