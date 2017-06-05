@@ -557,6 +557,38 @@ bool LineEquations1(IUnit* player, Vec3 enemyPosi, float distance)
 	return wall;
 }
 
+bool LineDistanceCheck(IUnit* enemy, IUnit* player, float distance)
+{
+	auto collision = false;
+	Vec3 porte = Extend(enemy->GetPosition(), player->GetPosition(), -distance);
+	Vec2 from = ToVec2(enemy->GetPosition());
+	Vec2 to = ToVec2(porte);
+	float m = ((to.y - from.y) / (to.x - from.x));
+	float X;
+	float Y;
+	float m2 = (-(to.x - from.x) / (to.y - from.y));
+	auto heros = GEntityList->GetAllHeros(false, true);
+
+	for (auto hero : heros)
+	{
+		Vec3 heroP;
+		heroP = hero->GetPosition();
+		Vec2 heroPos = ToVec2(heroP);
+		float herox = heroPos.x;
+		float heroy = heroPos.y;
+		X = ((m2*herox) - (from.x*m) + (from.y - heroy)) / (m2 - m);
+		Y = m * (X - from.x) + from.y;
+		Vec2 colliPos;
+		colliPos.Set(X, Y);
+		if (Distance(colliPos, heroPos) <= hero->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
+		{
+			collision = true;
+			break;
+		}
+	}
+	return collision;
+}
+
 bool buildingCheck1(IUnit* enemy, Vec3 enemyPosi, IUnit* player, float distance)
 {
 	auto collision = false;
@@ -806,55 +838,15 @@ Vec3 SmartELogic()
 	}
 }
 
-bool LineDistance(IUnit* enemy, IUnit* player, float distance)
-{
-	auto collision = false;
-	Vec3 porte = Extend(enemy->GetPosition(), player->GetPosition(), -distance);
-	Vec2 from = ToVec2(enemy->GetPosition());
-	Vec2 to = ToVec2(porte);
-	float m = ((to.y - from.y) / (to.x - from.x));
-	float X;
-	float Y;
-	float m2 = (-(to.x - from.x) / (to.y - from.y));
-	auto heros = GEntityList->GetAllHeros(false, true);
-	auto minions = GEntityList->GetAllMinions(false, true, true);
-
-	for (auto hero : heros)
-	{
-		if (hero != nullptr && hero->IsValidTarget())
-		{
-			if (player->IsValidTarget(hero, Q->Range() + 200) && Q->IsReady() && Distance(hero->GetPosition(), player->GetPosition()) > Q->Range())
-			{
-				Vec3 heroP;
-				heroP = hero->GetPosition();
-				Vec2 heroPos = ToVec2(heroP);
-				float herox = heroPos.x;
-				float heroy = heroPos.y;
-				X = ((m2*herox) - (from.x*m) + (from.y - heroy)) / (m2 - m);
-				Y = m * (X - from.x) + from.y;
-				Vec2 colliPos;
-				colliPos.Set(X, Y);
-
-				if (Distance(colliPos, heroPos) <= hero->BoundingRadius() && Distance(colliPos, from) <= 200 && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
-				{
-					collision = true;
-					break;
-				}
-			}
-		}
-	}
-	return collision;
-}
-
 void  QLogic()
 {
 	auto player = GEntityList->Player();
 	auto minions = GEntityList->GetAllMinions(false, true, true);
 	for (auto minion : minions)
 	{
-		if (LineDistance(minion, player, 200))
+		if (LineDistanceCheck(minion, player, 400))
 		{
-			if (minion != nullptr && E->IsReady() && player->IsValidTarget(minion, Q->Range()))
+			if (minion != nullptr && Q->IsReady() && player->IsValidTarget(minion, Q->Range()))
 			{
 				Q->CastOnUnit(minion);
 			}
@@ -866,8 +858,8 @@ void RLock()
 {
 	Vec3 empt;
 	empt.Set(0,0,0);
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, R->Range() + 200);
-	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && GEntityList->Player()->IsValidTarget(enemy, R->Range() + 200))
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, R->Range() + 400);
+	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero() && GEntityList->Player()->IsValidTarget(enemy, R->Range() + 400))
 	{
 		if (LockR->Enabled() && GEntityList->Player()->HasBuff("LucianR") && direction != empt)
 		{
@@ -876,7 +868,7 @@ void RLock()
 			Vec3 enemyposi = enemy->GetPosition();
 
 			GOrbwalking->SetAttacksAllowed(false);
-			movePos = enemyposi + direction*(-distances - 10);
+			movePos = enemyposi + direction*(-distances);
 			Vec3 rotpo1 = RotateAround(enemyposi, GEntityList->Player()->GetPosition(), 90);
 			Vec3 rotpo2 = RotateAround(enemyposi, GEntityList->Player()->GetPosition(), -90);
 			float p12f = Distance(GEntityList->Player()->GetPosition(), rotpo1);
@@ -889,37 +881,42 @@ void RLock()
 			double incos2 = ((p12s * p12s) + (p13s * p13s) - (p23s * p23s)) / (2 * p12s * p13s);
 			double result1 = acos(incos1) * 180.0 / PI;
 			double result2 = acos(incos2) * 180.0 / PI;
-			if (result1 < 91)
+			if (result1 < 91 && result1 > 5 && result2 > 5)
 			{
 				Vec3 mover1 = RotateAround(movePos, GEntityList->Player()->GetPosition(), 2*result1);
 				Vec3 mover2 = RotateAround(movePos, GEntityList->Player()->GetPosition(), -2*result1);
 				choser = LineChecker(enemy, GEntityList->Player(), 400, mover1, mover2);
 			}
-			if (result2 < 91)
+			if (result2 < 91 && result2 > 5 && result1 > 5)
 			{
 				Vec3 mover1 = RotateAround(movePos, GEntityList->Player()->GetPosition(), 2*result2);
 				Vec3 mover2 = RotateAround(movePos, GEntityList->Player()->GetPosition(), -2*result2);
 				choser = LineChecker(enemy, GEntityList->Player(), 400, mover1, mover2);
 			}
+
 			float di1 = Distance(GGame->CursorPosition(), enemy->GetPosition());
 			float di2 = Distance(GEntityList->Player()->GetPosition(), enemy->GetPosition());
 			float cdi1 = Distance(choser, enemy->GetPosition());
 			float cdi2 = Distance(movePos, enemy->GetPosition());
-			if (enemy == nullptr)
+			
+			if (!enemy->IsMoving() || result1 < 6 || result2 < 6)
 			{
-				GOrbwalking->Orbwalk(GEntityList->Player(), GGame->CursorPosition());
+				Vec3 alter = Extend(enemy->GetPosition(), movePos, di1);
+				GOrbwalking->Orbwalk(GEntityList->Player(), alter);
 				GOrbwalking->SetMovementAllowed(false);
 			}
 			if (di1 < di2 && enemy->IsMoving())
 			{
 				if (cdi1 < cdi2)
 				{
-					GOrbwalking->Orbwalk(GEntityList->Player(), choser);
+					Vec3 newchoser = Extend(GEntityList->Player()->GetPosition(), choser, Distance(GEntityList->Player()->GetPosition(), choser)*4  );
+					GOrbwalking->Orbwalk(GEntityList->Player(), newchoser);
 					GOrbwalking->SetMovementAllowed(false);
 				}
 				if (cdi1 > cdi2)
 				{
-					GOrbwalking->Orbwalk(GEntityList->Player(), movePos);
+					Vec3 newmovePos = Extend(GEntityList->Player()->GetPosition(), movePos, Distance(GEntityList->Player()->GetPosition(), movePos) * 4);
+					GOrbwalking->Orbwalk(GEntityList->Player(), newmovePos);
 					GOrbwalking->SetMovementAllowed(false);
 				}
 			}
@@ -927,23 +924,21 @@ void RLock()
 			{
 				if (cdi1 > cdi2)
 				{
-					GOrbwalking->Orbwalk(GEntityList->Player(), choser);
+					Vec3 newchoser = Extend(GEntityList->Player()->GetPosition(), choser, Distance(GEntityList->Player()->GetPosition(), choser) * 4);
+					GOrbwalking->Orbwalk(GEntityList->Player(), newchoser);
 					GOrbwalking->SetMovementAllowed(false);
 				}
 				if (cdi1 < cdi2)
 				{
-					GOrbwalking->Orbwalk(GEntityList->Player(), movePos);
+					Vec3 newmovePos = Extend(GEntityList->Player()->GetPosition(), movePos, Distance(GEntityList->Player()->GetPosition(), movePos) * 4);
+					GOrbwalking->Orbwalk(GEntityList->Player(), newmovePos);
 					GOrbwalking->SetMovementAllowed(false);
 				}
 			}
-			if(!enemy->IsMoving())
-			{
-				Vec3 alter = Extend(enemy->GetPosition(), movePos, di1);
-				GOrbwalking->Orbwalk(GEntityList->Player(), alter);
-				GOrbwalking->SetMovementAllowed(false);
-			}
 		}
 	}
+	else
+		GOrbwalking->SetMovementAllowed(true);
 }
 
 void KS()
@@ -1233,6 +1228,13 @@ PLUGIN_EVENT(void) OnGapCloser(GapCloserSpell const& champ)
 
 PLUGIN_EVENT(void) OnRender()
 {
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, R->Range());
+	
+	if (enemy != nullptr)
+	{
+		GPluginSDK->GetRenderer()->DrawOutlinedCircle(enemy->GetPosition(), Pink(), enemy->BoundingRadius());
+	}
+
 	if (DrawPriority->Enabled())
 	{
 		static IFont* pFont = nullptr;
