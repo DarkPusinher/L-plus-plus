@@ -5,9 +5,14 @@
 #include "Geometry.h"
 #include "Extention.h"
 #include <sstream>
+#include <iostream>
+#include <windows.h>
 #include <map>
 #include <string>
 #include <vector>
+#include <math.h>
+#define PI 3.14159265
+
 
 PluginSetup("MyAnivia")
 
@@ -81,15 +86,39 @@ bool checkKQ = false;
 int timeKR;
 bool checkKR = false;
 
+std::vector<Vec3> epos;
+std::vector<double> travelDistances;
+double delayer = 0;
+double delayer1 = 0;
+double delayer2 = 0;
+double delayer3 = 0;
+double delayer5 = 0;
+double delayer6 = 0;
+double D = 0;
+double averageDist = 0;
+
+double theta;
+bool stoper = false;
+bool stopper = false;
+bool stoper2 = false;
+bool once = true;
+
+double delayers = 0;
+Vec3 epos123;
+Vec3 ppos123;
+Vec3 direction5;
+Vec3 deneme;
+Vec3 empt;
+
 std::vector<std::string> const& Names = { "High", "VeryHigh"};
 float KeyPre;
 int ComboMode = 1;
 
 void inline LoadSpells()
 {
-	Q = GPluginSDK->CreateSpell2(kSlotQ, kLineCast, true, true, (kCollidesWithYasuoWall));
-	Q->SetOverrideDelay(0.25f);
-	Q->SetOverrideSpeed(850.f);
+	Q = GPluginSDK->CreateSpell2(kSlotQ, kLineCast, true, true, (kCollidesWithNothing));
+	Q->SetOverrideDelay(0.375f);
+	Q->SetOverrideSpeed(900.f);
 	W = GPluginSDK->CreateSpell2(kSlotW, kCircleCast, false, false, (kCollidesWithNothing));
 	E = GPluginSDK->CreateSpell2(kSlotE, kTargetCast, true, false, kCollidesWithYasuoWall);
 	R = GPluginSDK->CreateSpell2(kSlotR, kCircleCast, false, true, (kCollidesWithNothing));
@@ -152,6 +181,357 @@ void inline Menu()
 	}
 }
 
+//Vec3 LinearPrediction(float accuracy, ISpell2* Q, IUnit* enemy)
+//{
+//	auto player = GEntityList->Player();
+//
+//	double D;
+//	double S;
+//	double t1;
+//	double t2;
+//	Vec3 direct;
+//	empt.Set(0, 0, 0);
+//	double travelDistance;
+//
+//	if (accuracy == 0)
+//	{
+//		if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && player->IsValidTarget(enemy, Q->Range()))
+//		{
+//			if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget())
+//			{
+//				if (enemy->IsMoving() == false)
+//				{
+//					return enemy->GetPosition();
+//				}
+//
+//				D = Distance(enemy, player);
+//				S = enemy->MovementSpeed();
+//			}
+//			if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && GGame->TickCount() > delayer)
+//			{
+//				epos.push_back(enemy->GetPosition());
+//				//delayer = GGame->TickCount() + 75;
+//			}
+//			if (!epos.size() > 2)
+//			{
+//				return empt;
+//			}
+//			if (enemy != nullptr && epos.size() >= 2)
+//			{
+//				direct = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+//				Vec3 future = epos[epos.size() - 1] + (direct * 1000);
+//				float p12f = Distance(player->GetPosition(), enemy->GetPosition());
+//				float p13f = Distance(enemy->GetPosition(), future);
+//				float p23f = Distance(player->GetPosition(), future);
+//				double incos1 = ((p12f * p12f) + (p13f * p13f) - (p23f * p23f)) / (2 * p12f * p13f);
+//				double result1 = acos(incos1) * 180.0 / PI;
+//				theta = result1;
+//				stoper1 = true;
+//
+//				double b = 2 * D*S*cos(theta);
+//				double a = pow(Q->Speed(), 2) - pow(S, 2);
+//				double c = -D*D;
+//
+//				t1 = (-b + sqrt((b*b) - 4 * a*c)) / (2 * a);
+//				t2 = (-b - sqrt((b*b) - 4 * a*c)) / (2 * a);
+//
+//				if (t1 > 0 && t2 > 0)
+//				{
+//					if (t1 > t2)
+//					{
+//						travelDistance = (t2 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//						return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//					}
+//					if (t2 > t1)
+//					{
+//						travelDistance = (t1 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//						return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//					}
+//				}
+//				if (t2 > 0)
+//				{
+//					travelDistance = (t2 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//					return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//				}
+//				if (t1 > 0)
+//				{
+//					travelDistance = (t1 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//					return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//				}
+//				if (t1 < 0 && t2 < 0)
+//				{
+//					return empt;
+//				}
+//			}
+//
+//				//if (travelDistances.size() > 1)
+//				//{
+//				//	averageDist = travelDistances[travelDistances.size() - 1] + travelDistances[travelDistances.size() - 2] / 2;
+//				//	PrePos = epos[epos.size() - 1] + (direct*(averageDist - Q->Radius() + enemy->BoundingRadius() - 100));
+//				//	averageDist = 0;
+//				//	return PrePos;
+//				//}
+//			else
+//				return empt;
+//		}
+//	}
+//
+//	if (accuracy == 1)
+//	{
+//		if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && player->IsValidTarget(enemy, Q->Range()))
+//		{
+//			if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget())
+//			{
+//				if (enemy->IsMoving() == false)
+//				{
+//					return enemy->GetPosition();
+//				}
+//
+//				D = Distance(enemy, player);
+//				S = enemy->MovementSpeed();
+//			}
+//			if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && GGame->TickCount() > delayer)
+//			{
+//				epos.push_back(enemy->GetPosition());
+//				//delayer = GGame->TickCount() + 75;
+//			}
+//			if (!epos.size() > 2)
+//			{
+//				return empt;
+//			}
+//			if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && epos.size() > 2 && stoper == false)
+//			{
+//				if ((epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize() != (epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize())
+//				{
+//					Vec3 loc1 = enemy->GetPosition() + ((epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize()) * 1000;
+//					Vec3 loc2 = enemy->GetPosition() + ((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize()) * 1000;
+//					if (Distance(loc1, loc2) > 10)
+//					{
+//						stoper = true;
+//						delayer2 = GGame->TickCount() + 300;
+//					}
+//				}
+//				else
+//					return empt;
+//			}
+//			if (GGame->TickCount() <= delayer2)
+//			{
+//				if (stoper == true && enemy != nullptr)
+//				{
+//					direct = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+//					Vec3 future = epos[epos.size() - 1] + (direct * 1000);
+//					float p12f = Distance(player->GetPosition(), enemy->GetPosition());
+//					float p13f = Distance(enemy->GetPosition(), future);
+//					float p23f = Distance(player->GetPosition(), future);
+//					double incos1 = ((p12f * p12f) + (p13f * p13f) - (p23f * p23f)) / (2 * p12f * p13f);
+//					double result1 = acos(incos1) * 180.0 / PI;
+//					theta = result1;
+//					stoper1 = true;
+//				}
+//
+//				if (stoper == true && stoper1 == true/* && delayer3 <= GGame->TickCount()*/)
+//				{
+//					double b = 2 * D*S*cos(theta);
+//					double a = pow(Q->Speed(), 2) - pow(S, 2);
+//					double c = -D*D;
+//
+//					t1 = (-b + sqrt((b*b) - 4 * a*c)) / (2 * a);
+//					t2 = (-b - sqrt((b*b) - 4 * a*c)) / (2 * a);
+//					//delayer3 = GGame->TickCount() + 75;
+//				}
+//
+//				if (stoper1 == true && stoper == true)
+//				{
+//					if (t1 > 0 && t2 > 0)
+//					{
+//						if (t1 > t2)
+//						{
+//							travelDistance = (t2 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//							return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//						}
+//						if (t2 > t1)
+//						{
+//							travelDistance = (t1 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//							return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//						}
+//					}
+//					if (t2 > 0)
+//					{
+//						travelDistance = (t2 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//						return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//					}
+//					if (t1 > 0)
+//					{
+//						travelDistance = (t1 + Q->GetDelay() + (GGame->Latency()) / 1000)*S;
+//						return epos[epos.size() - 1] + (direct*(travelDistance - Q->Radius() + enemy->BoundingRadius() - 100));
+//					}
+//					if (t1 < 0 && t2 < 0)
+//					{
+//						return empt;
+//					}
+//					//if (travelDistances.size() > 1)
+//					//{
+//					//	averageDist = travelDistances[travelDistances.size() - 1] + travelDistances[travelDistances.size() - 2] / 2;
+//					//	PrePos = epos[epos.size() - 1] + (direct*(averageDist - Q->Radius() + enemy->BoundingRadius() - 100));
+//					//	averageDist = 0;
+//					//	return PrePos;
+//					//}
+//				}
+//				else
+//					return empt;
+//			}
+//			if (delayer2 < GGame->TickCount())
+//			{
+//				stoper1 = false;
+//				stoper = false;
+//				return empt;
+//			}
+//		}
+//	}
+//}
+
+bool CollisionChecker(IUnit* enemy, IUnit* player, ISpell2* Q)
+{
+	auto collision = false;
+	Vec3 porte = enemy->GetPosition();
+	Vec2 from = ToVec2(player->GetPosition());
+	Vec2 to = ToVec2(porte);
+	float m = ((to.y - from.y) / (to.x - from.x));
+	float X;
+	float Y;
+	float m2 = (-(to.x - from.x) / (to.y - from.y));
+	auto minions = GEntityList->GetAllMinions(false, true, true);
+
+	for (auto minion : minions)
+	{
+		Vec3 minionP = minion->GetPosition();
+		Vec2 minionPos = ToVec2(minionP);
+		float px = minionPos.x;
+		float py = minionPos.y;
+		X = ((m2*px) - (from.x*m) + (from.y - py)) / (m2 - m);
+		Y = m * (X - from.x) + from.y;
+		Vec2 colliPos;
+		colliPos.Set(X, Y);
+		if (Distance(colliPos, minionPos) <= Q->Radius() + minion->BoundingRadius() - 10 && Distance(colliPos, ToVec2(porte)) < Distance(from, ToVec2(porte)) && Distance(from, colliPos) < Distance(ToVec2(enemy->GetPosition()), from))
+		{
+			collision = true;
+			break;
+		}
+	}
+
+	return collision;
+}
+
+Vec3 LinearPrediction()
+{
+	auto player = GEntityList->Player();
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+
+	double h = player->GetPosition().x;
+	double k = player->GetPosition().y;
+	double SS = Q->Speed();
+	double temporar = 1000;
+	int t;
+	std::vector<double> Ds;
+
+	if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && player->IsValidTarget(enemy, Q->Range()))
+	{
+		if (!enemy->IsMoving())
+		{
+			return enemy->GetPosition();
+		}
+		
+		
+		if (enemy->IsDashing())
+		{
+			return empt;
+		}
+		
+		double ES = enemy->MovementSpeed();
+		
+		if (GGame->TickCount() >= delayer)
+		{
+			epos.push_back(enemy->GetPosition());
+			delayer = GGame->TickCount() + 75;
+		}
+		
+		if (epos.size() > 3 && stoper == false)
+		{
+			if (ToVec2((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize()) != ToVec2((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize()))
+			{
+				Vec2 loc1 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize())) * 1000;
+				Vec2 loc2 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize())) * 1000;
+				if (Distance(loc1, loc2) > 10)
+				{
+					stoper = true;
+					delayer2 = GGame->TickCount() + 300;
+				}
+				else
+					return empt;
+			}
+			else
+				return empt;
+		}
+		
+		if (stoper = true && GGame->TickCount() >= delayer2)
+		{
+			Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+			for (int i = 0; i < 2000; i++)
+			{
+				Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
+				D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
+				Ds.push_back(D);
+				if (Ds[Ds.size() - 1] <= temporar)
+				{
+					temporar = Ds[Ds.size() - 1];
+				}
+				else
+				{
+					t = i - 1;
+					break;
+				}
+			}
+			t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
+			Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
+			Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() + enemy->BoundingRadius() - 150));
+			return fut;
+		}
+		else
+		{
+			stoper = false;
+			return empt;
+		}
+
+		//if (epos.size() > 1)
+		//{
+		//	Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+		//	for (int i = 0; i < 2000; i++)
+		//	{
+		//		Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
+		//		D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
+		//		Ds.push_back(D);
+		//		if (Ds[Ds.size() - 1] <= temporar)
+		//		{
+		//			temporar = Ds[Ds.size() - 1];
+		//		}
+		//		else
+		//		{
+		//			t = i - 1;
+		//			break;
+		//		}
+		//	}
+		//	t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
+		//	Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
+		//	Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 25));
+		//	return fut;
+		//}
+		//else
+		//	return empt;
+	}
+	else
+		return empt;
+}
+
 void autoQ()
 {
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
@@ -159,7 +539,7 @@ void autoQ()
 	if (AniviaQ != nullptr && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
 		Qpos = AniviaQ->GetPosition();
-		if (Distance(Qpos, enemy->GetPosition()) <= Q->Radius() + 20)
+		if (Distance(Qpos, enemy->GetPosition()) <= Q->Radius() + enemy->BoundingRadius() - 75)
 		{
 			Q->CastOnPlayer();
 		}
@@ -237,12 +617,10 @@ void autoQFull()
 
 	if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaR != nullptr)
 	{
-		AdvPredictionOutput predic;
-		AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
-		GPrediction->RunPrediction(&inpute, &predic);
-		if (predic.HitChance >= kHitChanceHigh)
+		empt.Set(0,0,0);
+		if (LinearPrediction() != empt)
 		{
-			Q->CastOnPosition(predic.CastPosition);
+			Q->CastOnPosition(LinearPrediction());
 			time = GGame->TickCount();
 			check = false;
 		}
@@ -263,7 +641,7 @@ void Combo()
 			checkR = false;
 		}
 
-		if (player->IsValidTarget(enemy, W->Range() - 100) && Distance(enemy->GetPosition(), player->GetPosition()) > R->Range() && R->IsReady() && ComboR->Enabled() && AniviaR == nullptr && checkR == true && (Q->IsReady() || E->IsReady()))
+		if (player->IsValidTarget(enemy, W->Range() - 100) && Distance(enemy->GetPosition(), player->GetPosition()) > R->Range() && R->IsReady() && ComboW->Enabled() && ComboR->Enabled() && AniviaR == nullptr && checkR == true && (Q->IsReady() || E->IsReady()))
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(player->GetPosition(), enemyPos, R->Range());
@@ -272,7 +650,7 @@ void Combo()
 			checkR = false;
 		}
 
-		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && ComboW->Enabled() && (Q->IsReady() && E->IsReady()) || (R->IsReady() && E->IsReady()))
+		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && ComboW->Enabled() && (Q->IsReady() && E->IsReady()) || (R->IsReady() && E->IsReady() && ComboW->Enabled()))
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(enemyPos, player->GetPosition(), -190);
@@ -281,12 +659,10 @@ void Combo()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			AdvPredictionOutput predic;
-			AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
-			GPrediction->RunPrediction(&inpute, &predic);
-			if (predic.HitChance >= kHitChanceHigh)
+			if (LinearPrediction() != empt)
 			{
-				Q->CastOnPosition(predic.CastPosition);
+				delayer3 = GGame->TickCount() + (Q->GetDelay()* 1000);
+				Q->CastOnPosition(LinearPrediction());
 				time = GGame->TickCount();
 				check = false;
 			}
@@ -332,7 +708,7 @@ void Combo2()
 			checkR = false;
 		}
 
-		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && ComboW->Enabled() && Q->IsReady() && E->IsReady() || (R->IsReady() && E->IsReady()))
+		if (player->IsValidTarget(enemy, W->Range() - 100) && W->IsReady() && ComboW->Enabled() && Q->IsReady() && E->IsReady() || (R->IsReady() && E->IsReady() && ComboW->Enabled()))
 		{
 			Vec3 enemyPos = enemy->GetPosition();
 			Vec3 cast = Extend(enemyPos, player->GetPosition(), -190);
@@ -341,12 +717,10 @@ void Combo2()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			AdvPredictionOutput predic;
-			AdvPredictionInput inpute = { player->GetPosition(), player->GetPosition(), true, true, kCollidesWithYasuoWall, Q->GetDelay(), Q->Radius(), Q->Range(), Q->Speed(), kLineCast , enemy };
-			GPrediction->RunPrediction(&inpute, &predic);
-			if (predic.HitChance >= kHitChanceHigh)
+			if (LinearPrediction() != empt)
 			{
-				Q->CastOnPosition(predic.CastPosition);
+				delayer3 = GGame->TickCount() + (Q->GetDelay() * 1000);
+				Q->CastOnPosition(LinearPrediction());
 				time = GGame->TickCount();
 				check = false;
 			}
@@ -447,9 +821,12 @@ void KS()
 			}
 			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage > Enemy->GetHealth() && AniviaQ == nullptr && checkKQ == true)
 			{
-				Q->CastOnTarget(Enemy, 5);
-				timeKQ = GGame->TickCount();
-				checkKQ = false;
+				if (LinearPrediction() != empt)
+				{
+					Q->CastOnPosition(LinearPrediction());
+					timeKQ = GGame->TickCount();
+					checkKQ = false;
+				}
 			}
 			if (KSR->Enabled() && R->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), R->Range()) && RDamage > Enemy->GetHealth() && AniviaR == nullptr && checkKR == true)
 			{
@@ -482,7 +859,8 @@ void Harrass()
 			GPrediction->RunPrediction(&inpute, &predic);
 			if (predic.HitChance >= kHitChanceHigh)
 			{
-				Q->CastOnPosition(predic.CastPosition);
+				Vec3 MyPosition = Extend(predic.CastPosition, enemy->GetPosition(), enemy->BoundingRadius() + Q->Radius() -10);
+				Q->CastOnPosition(MyPosition);
 				time = GGame->TickCount();
 				check = false;
 			}
@@ -526,7 +904,8 @@ void Harrass2()
 			GPrediction->RunPrediction(&inpute, &predic);
 			if (predic.HitChance >= kHitChanceHigh)
 			{
-				Q->CastOnPosition(predic.CastPosition);
+				Vec3 MyPosition = Extend(predic.CastPosition, enemy->GetPosition(), enemy->BoundingRadius() + Q->Radius() - 10);
+				Q->CastOnPosition(MyPosition);
 				time = GGame->TickCount();
 				check = false;
 			}
@@ -569,7 +948,46 @@ inline int ChangePriority()
 
 PLUGIN_EVENT(void) OnGameUpdate()
 {
-	autoQFull();
+	//autoQFull();
+	//auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	//if (enemy != nullptr)
+	//{
+	//	LinearPrediction(1, Q,enemy);
+	//}
+	LinearPrediction();
+
+	//if (GGame->TickCount() > delayer3 && check == false)
+	//{
+	//	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	//	auto player = GEntityList->Player();
+	//
+	//	if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && stopper == false)
+	//	{
+	//		epos123 = enemy->GetPosition();
+	//		ppos123 = player->GetPosition();
+	//		direction5 = (epos123 - ppos123).VectorNormalize();
+	//		deneme = ppos123;
+	//		stopper = true;
+	//	}
+	//
+	//	if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && GGame->TickCount() >= delayers)
+	//	{
+	//		double dist = Q->Speed() / 20;
+	//
+	//		deneme = deneme + (direction5*dist);
+	//		delayers = GGame->TickCount() + 50;
+	//	}
+	//
+	//	if (Distance(deneme, player->GetPosition()) > Q->Range())
+	//	{
+	//		stopper = false;
+	//	}
+	//}
+	//if (AniviaQ == nullptr)
+	//{
+	//	deneme = GEntityList->Player()->GetPosition();
+	//}
+
 	if (GetAsyncKeyState(ComboAAkey->GetInteger()))
 	{
 		auto level = GEntityList->Player()->GetLevel();
@@ -592,7 +1010,7 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	{
 		checkKR = true;
 	}
-	if (GGame->TickCount() - time >= 2500)
+	if (GGame->TickCount() - time >= 1000)
 	{
 		check = true;
 	}
@@ -608,11 +1026,11 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	{
 		checkFQ = true;
 	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ChangePriority() == 1)
+	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ChangePriority() == 0)
 	{
 		Combo();
 	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ChangePriority() == 0)
+	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && !GGame->IsChatOpen() && ChangePriority() == 1)
 	{
 		Combo2();
 	}
@@ -686,6 +1104,10 @@ PLUGIN_EVENT(void) OnDestroyObject(IUnit* Source)
 
 PLUGIN_EVENT(void) OnRender()
 {
+	//if (deneme != empt) { GPluginSDK->GetRenderer()->DrawOutlinedCircle(deneme, Vec4(255, 255, 0, 255), 50); }
+	//auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	//if(enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && LinearPrediction() != empt){ GPluginSDK->GetRenderer()->DrawOutlinedCircle(LinearPrediction(), Pink(), 50); }
+	if(AniviaQ != nullptr) { GPluginSDK->GetRenderer()->DrawOutlinedCircle(AniviaQ->GetPosition(), Pink(), Q->Radius()); }
 	if (RenderQ->Enabled()) { GPluginSDK->GetRenderer()->DrawOutlinedCircle(GEntityList->Player()->GetPosition(), Vec4(255, 255, 0, 255), Q->Range()); }
 	if (RenderW->Enabled()) { GPluginSDK->GetRenderer()->DrawOutlinedCircle(GEntityList->Player()->GetPosition(), Vec4(255, 255, 0, 255), W->Range()); }
 	if (RenderE->Enabled()) { GPluginSDK->GetRenderer()->DrawOutlinedCircle(GEntityList->Player()->GetPosition(), Vec4(255, 255, 0, 255), E->Range()); }
@@ -720,7 +1142,6 @@ PLUGIN_API void OnLoad(IPluginSDK* PluginSDK)
 	GEventManager->AddEventHandler(kEventOnCreateObject, OnCreateObject);
 	GEventManager->AddEventHandler(kEventOnDestroyObject, OnDestroyObject);
 	GEventManager->AddEventHandler(kEventOnRender, OnRender);
-
 }
 
 PLUGIN_API void OnUnload()
