@@ -226,7 +226,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 10 && Distance(colliPos, from) <= 425 && Distance(from, minionPos) < Distance(ToVec2(player->GetPosition()), minionPos))
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+			&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -243,7 +244,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 10 && Distance(colliPos, from) <= 425 && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+			&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -258,7 +260,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos;
 	colliPos.Set(X, Y);
-	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 50 && Distance(colliPos, from) <= 425 && Distance(from, mnexusPos) < Distance(ToVec2(player->GetPosition()), mnexusPos))
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+		&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos))
 	{
 		collision = true;
 	}
@@ -271,7 +274,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos1;
 	colliPos1.Set(X, Y);
-	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 50 && Distance(colliPos1, from) <= 425 && Distance(from, enexusPos) < Distance(ToVec2(player->GetPosition()), enexusPos))
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 30 && Distance(colliPos1, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos1)
+		&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos1))
 	{
 		collision = true;
 	}
