@@ -534,14 +534,17 @@ Vec3 LinearPrediction()
 
 void autoQ()
 {
-	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemies = GEntityList->GetAllHeros(false, true);
 
-	if (AniviaQ != nullptr && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
+	for (auto enemy : enemies)
 	{
-		Qpos = AniviaQ->GetPosition();
-		if (Distance(Qpos, enemy->GetPosition()) <= Q->Radius() + enemy->BoundingRadius() - 75)
+		if (AniviaQ != nullptr && enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 		{
-			Q->CastOnPlayer();
+			Qpos = AniviaQ->GetPosition();
+			if (Distance(Qpos, enemy->GetPosition()) <= Q->Radius() + enemy->BoundingRadius() - 75)
+			{
+				Q->CastOnPlayer();
+			}
 		}
 	}
 }
@@ -631,6 +634,7 @@ void Combo()
 {
 	auto player = GEntityList->Player();
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemies = GEntityList->GetAllHeros(false, true);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -668,18 +672,21 @@ void Combo()
 			}
 		}
 
-		if (player->IsValidTarget(enemy, player->AttackRange()) && E->IsReady() && ComboE->Enabled())
+		for (auto target : enemies)
 		{
-			if (ComboEI->Enabled())
+			if (player->IsValidTarget(target, player->AttackRange()) && E->IsReady() && ComboE->Enabled())
 			{
-				if (enemy->HasBuff("Stun") || enemy->HasBuff("aniviaiced"))
+				if (ComboEI->Enabled())
 				{
-					E->CastOnUnit(enemy);
+					if (target->HasBuff("Stun") || target->HasBuff("aniviaiced"))
+					{
+						E->CastOnUnit(target);
+					}
 				}
-			}
-			else
-			{
-				E->CastOnUnit(enemy);
+				else
+				{
+					E->CastOnUnit(target);
+				}
 			}
 		}
 	}
@@ -689,6 +696,7 @@ void Combo2()
 {
 	auto player = GEntityList->Player();
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+	auto enemies = GEntityList->GetAllHeros(false, true);
 
 	if (enemy != nullptr && enemy->IsValidTarget() && enemy->IsHero())
 	{
@@ -726,18 +734,21 @@ void Combo2()
 			}
 		}
 
-		if (player->IsValidTarget(enemy, player->AttackRange()) && E->IsReady() && ComboE->Enabled())
+		for (auto target : enemies)
 		{
-			if (ComboEI->Enabled())
+			if (player->IsValidTarget(target, player->AttackRange()) && E->IsReady() && ComboE->Enabled())
 			{
-				if (enemy->HasBuff("Stun") || enemy->HasBuff("aniviaiced"))
+				if (ComboEI->Enabled())
 				{
-					E->CastOnUnit(enemy);
+					if (target->HasBuff("Stun") || target->HasBuff("aniviaiced"))
+					{
+						E->CastOnUnit(target);
+					}
 				}
-			}
-			else
-			{
-				E->CastOnUnit(enemy);
+				else
+				{
+					E->CastOnUnit(target);
+				}
 			}
 		}
 	}
