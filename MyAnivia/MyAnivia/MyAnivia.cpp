@@ -422,7 +422,7 @@ bool CollisionChecker(IUnit* enemy, IUnit* player, ISpell2* Q)
 	return collision;
 }
 
-Vec3 LinearPrediction()
+Vec2 LinearPrediction()
 {
 	auto player = GEntityList->Player();
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
@@ -438,13 +438,13 @@ Vec3 LinearPrediction()
 	{
 		if (!enemy->IsMoving())
 		{
-			return enemy->GetPosition();
+			return ToVec2(enemy->GetPosition());
 		}
 		
 		
 		if (enemy->IsDashing())
 		{
-			return empt;
+			return ToVec2(empt);
 		}
 		
 		double ES = enemy->MovementSpeed();
@@ -467,10 +467,10 @@ Vec3 LinearPrediction()
 					delayer2 = GGame->TickCount() + 300;
 				}
 				else
-					return empt;
+					return ToVec2(empt);
 			}
 			else
-				return empt;
+				return ToVec2(empt);
 		}
 		
 		if (stoper = true && GGame->TickCount() >= delayer2)
@@ -494,12 +494,12 @@ Vec3 LinearPrediction()
 			t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
 			Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
 			Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() + enemy->BoundingRadius() - 150));
-			return fut;
+			return ToVec2(fut);
 		}
 		else
 		{
 			stoper = false;
-			return empt;
+			return ToVec2(empt);
 		}
 
 		//if (epos.size() > 1)
@@ -529,7 +529,7 @@ Vec3 LinearPrediction()
 		//	return empt;
 	}
 	else
-		return empt;
+		return ToVec2(empt);
 }
 
 void autoQ()
@@ -621,9 +621,9 @@ void autoQFull()
 	if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaR != nullptr)
 	{
 		empt.Set(0,0,0);
-		if (LinearPrediction() != empt)
+		if (LinearPrediction() != ToVec2(empt))
 		{
-			Q->CastOnPosition(LinearPrediction());
+			Q->CastOnPosition(ToVec3(LinearPrediction()));
 			time = GGame->TickCount();
 			check = false;
 		}
@@ -663,10 +663,10 @@ void Combo()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			if (LinearPrediction() != empt)
+			if (LinearPrediction() != ToVec2(empt))
 			{
 				delayer3 = GGame->TickCount() + (Q->GetDelay()* 1000);
-				Q->CastOnPosition(LinearPrediction());
+				Q->CastOnPosition(ToVec3(LinearPrediction()));
 				time = GGame->TickCount();
 				check = false;
 			}
@@ -725,10 +725,10 @@ void Combo2()
 
 		if (player->IsValidTarget(enemy, Q->Range()) && Q->IsReady() && ComboQ->Enabled() && check == true && AniviaQ == nullptr)
 		{
-			if (LinearPrediction() != empt)
+			if (LinearPrediction() != ToVec2(empt))
 			{
 				delayer3 = GGame->TickCount() + (Q->GetDelay() * 1000);
-				Q->CastOnPosition(LinearPrediction());
+				Q->CastOnPosition(ToVec3(LinearPrediction()));
 				time = GGame->TickCount();
 				check = false;
 			}
@@ -832,9 +832,9 @@ void KS()
 			}
 			if (KSQ->Enabled() && Q->IsReady() && Enemy->IsValidTarget(GEntityList->Player(), Q->Range()) && QDamage > Enemy->GetHealth() && AniviaQ == nullptr && checkKQ == true)
 			{
-				if (LinearPrediction() != empt)
+				if (LinearPrediction() != ToVec2(empt))
 				{
-					Q->CastOnPosition(LinearPrediction());
+					Q->CastOnPosition(ToVec3(LinearPrediction()));
 					timeKQ = GGame->TickCount();
 					checkKQ = false;
 				}
