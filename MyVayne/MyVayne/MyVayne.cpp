@@ -196,7 +196,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, minionPos) < Distance(ToVec2(player->GetPosition()), minionPos))
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+			&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -213,7 +214,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+			&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -228,7 +230,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos;
 	colliPos.Set(X, Y);
-	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 50 && Distance(colliPos, from) <= distance && Distance(from, mnexusPos) < Distance(ToVec2(player->GetPosition()), mnexusPos))
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+		&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos))
 	{
 		collision = true;
 	}
@@ -241,7 +244,8 @@ bool buildingCheck(IUnit* enemy, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos1;
 	colliPos1.Set(X, Y);
-	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 50 && Distance(colliPos1, from) <= distance && Distance(from, enexusPos) < Distance(ToVec2(player->GetPosition()), enexusPos))
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 100 && Distance(colliPos1, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos1)
+		&& Distance(enemy->GetPosition(), player->GetPosition()) > Distance(from, colliPos1))
 	{
 		collision = true;
 	}
@@ -272,7 +276,8 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, minionPos) < Distance(ToVec2(playerPosi), minionPos))
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(playerPosi)) < Distance(ToVec2(playerPosi), colliPos)
+			&& Distance(enemy->GetPosition(), playerPosi) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -289,7 +294,8 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(playerPosi), heroPos))
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(playerPosi)) < Distance(ToVec2(playerPosi), colliPos)
+			&& Distance(enemy->GetPosition(), playerPosi) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -304,7 +310,8 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos;
 	colliPos.Set(X, Y);
-	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, mnexusPos) < Distance(ToVec2(playerPosi), mnexusPos))
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(playerPosi)) < Distance(ToVec2(playerPosi), colliPos)
+		&& Distance(enemy->GetPosition(), playerPosi) > Distance(from, colliPos))
 	{
 		collision = true;
 	}
@@ -317,7 +324,8 @@ bool buildingChecks(IUnit* enemy, Vec3 playerPosi, IUnit* player, float distance
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos1;
 	colliPos1.Set(X, Y);
-	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 100 && Distance(colliPos1, from) <= distance && Distance(from, enexusPos) < Distance(ToVec2(playerPosi), enexusPos))
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 100 && Distance(colliPos1, from) <= distance && Distance(from, ToVec2(playerPosi)) < Distance(ToVec2(playerPosi), colliPos1)
+		&& Distance(enemy->GetPosition(), playerPosi) > Distance(from, colliPos1))
 	{
 		collision = true;
 	}
@@ -466,7 +474,8 @@ bool buildingCheck1(IUnit* enemy, Vec3 enemyPosi, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, minionPos) < Distance(ToVec2(player->GetPosition()), minionPos))
+		if (Distance(colliPos, minionPos) <= enemy->BoundingRadius() + minion->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+			&& Distance(enemyPosi, player->GetPosition()) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -483,7 +492,8 @@ bool buildingCheck1(IUnit* enemy, Vec3 enemyPosi, IUnit* player, float distance)
 		Y = m * (X - from.x) + from.y;
 		Vec2 colliPos;
 		colliPos.Set(X, Y);
-		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 10 && Distance(colliPos, from) <= distance && Distance(from, heroPos) < Distance(ToVec2(player->GetPosition()), heroPos))
+		if (Distance(colliPos, heroPos) <= enemy->BoundingRadius() + hero->BoundingRadius() - 30 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+			&& Distance(enemyPosi, player->GetPosition()) > Distance(from, colliPos))
 		{
 			collision = true;
 			break;
@@ -498,7 +508,8 @@ bool buildingCheck1(IUnit* enemy, Vec3 enemyPosi, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos;
 	colliPos.Set(X, Y);
-	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 50 && Distance(colliPos, from) <= distance && Distance(from, mnexusPos) < Distance(ToVec2(player->GetPosition()), mnexusPos))
+	if (Distance(colliPos, mnexusPos) <= enemy->BoundingRadius() + mnexus->BoundingRadius() - 100 && Distance(colliPos, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos)
+		&& Distance(enemyPosi, player->GetPosition()) > Distance(from, colliPos))
 	{
 		collision = true;
 	}
@@ -511,7 +522,8 @@ bool buildingCheck1(IUnit* enemy, Vec3 enemyPosi, IUnit* player, float distance)
 	Y = m * (X - from.x) + from.y;
 	Vec2 colliPos1;
 	colliPos1.Set(X, Y);
-	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 50 && Distance(colliPos1, from) <= distance && Distance(from, enexusPos) < Distance(ToVec2(player->GetPosition()), enexusPos))
+	if (Distance(colliPos1, enexusPos) <= enemy->BoundingRadius() + enexus->BoundingRadius() - 100 && Distance(colliPos1, from) <= distance && Distance(from, ToVec2(player->GetPosition())) < Distance(ToVec2(player->GetPosition()), colliPos1)
+		&& Distance(enemyPosi, player->GetPosition()) > Distance(from, colliPos1))
 	{
 		collision = true;
 	}
@@ -622,6 +634,7 @@ Vec3 SmartQLogic()
 		{
 			if (player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemySafe, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
+				std::vector<Vec3> stun;
 				for (int i = 5; i < 360; i += 5)
 				{
 					Vec3 postQ1;
@@ -630,9 +643,12 @@ Vec3 SmartQLogic()
 					posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
 					if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
 					{
-						return posQ1;
-						break;
+						stun.push_back(posQ1);
 					}
+				}
+				if (stun.size() != 0)
+				{
+					return stun[(std::ceil(stun.size() / 2)) - 1];
 				}
 			}
 			if (EnemiesInRange(1500, player->GetPosition()) > 2)
@@ -700,6 +716,7 @@ Vec3 SmartQLogic()
 		{
 			if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
+				std::vector<Vec3> stun;
 				for (int i = 5; i < 360; i += 5)
 				{
 					Vec3 postQ1;
@@ -708,9 +725,12 @@ Vec3 SmartQLogic()
 					posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
 					if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
 					{
-						return posQ1;
-						break;
+						stun.push_back(posQ1);
 					}
+				}
+				if (stun.size() != 0)
+				{
+					return stun[(std::ceil(stun.size() / 2)) - 1];
 				}
 			}
 			if (EnemiesInRange(1500, player->GetPosition()) > 2)
@@ -768,6 +788,7 @@ Vec3 SmartQLogic()
 		{
 			if (player->IsValidTarget(enemy, Q->Range() + player->AttackRange()) && E->IsReady())
 			{
+				std::vector<Vec3> stun;
 				for (int i = 5; i < 360; i += 5)
 				{
 					Vec3 postQ1;
@@ -776,9 +797,12 @@ Vec3 SmartQLogic()
 					posQ1 = Extend(player->GetPosition(), postQ1, Q->Range());
 					if (LineEquations(enemy, posQ1, player, 425) == true || buildingChecks(enemy, posQ1, player, 425) == true)
 					{
-						return posQ1;
-						break;
+						stun.push_back(posQ1);
 					}
+				}
+				if (stun.size() != 0)
+				{
+					return stun[(std::ceil(stun.size() / 2)) - 1];
 				}
 			}
 			if(ComboQ->Enabled() && Q->IsReady() && GOrbwalking->GetOrbwalkingMode() == kModeCombo && QSmart->Enabled())
