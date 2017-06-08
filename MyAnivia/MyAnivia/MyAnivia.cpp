@@ -473,7 +473,7 @@ Vec2 LinearPrediction()
 				return ToVec2(empt);
 		}
 		
-		if (stoper = true && GGame->TickCount() >= delayer2)
+		if (stoper = true && GGame->TickCount() <= delayer2)
 		{
 			Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
 			for (int i = 0; i < 2000; i++)
