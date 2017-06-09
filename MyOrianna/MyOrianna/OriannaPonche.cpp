@@ -105,6 +105,7 @@ ISpell2* QR;
 ISpell2* Ignite = nullptr;
 IUnit* Ball;
 
+std::vector<Vec3> BallLocations;
 Vec3 BallLocation;
 Vec2 colliPos;
 int IgniteSlot = 1;
@@ -131,7 +132,7 @@ double delayer1 = 0;
 double delayer2 = 0;
 double delayer5 = 0;
 double delayer6 = 0;
-double D = 0;
+
 double averageDist = 0;
 
 
@@ -144,7 +145,7 @@ void LoadSpells()
 	R = GPluginSDK->CreateSpell2(kSlotR, kCircleCast, false, true, kCollidesWithNothing);
 	QR = GPluginSDK->CreateSpell2(kSlotQ, kCircleCast, false, true, kCollidesWithYasuoWall);
 
-	Q->SetSkillshot(0.0001f, 145.f, 1100.f, 815.f);
+	Q->SetSkillshot(0.0001f, 145.f, 900.f, 815.f);
 	W->SetSkillshot(0.25f, 250.f, HUGE_VAL, 1250.f);
 	E->SetSkillshot(0.0f, 0.f, 1800.f, 1095.f);
 	R->SetSkillshot(0.5f, 410.f, HUGE_VAL, 1250.f);
@@ -162,7 +163,7 @@ void LoadMenu()
 	ComboE = ComboMenu->CheckBox("Use E", true);
 	ComboEQ = ComboMenu->CheckBox("Use EQ", true);
 	//ComboAR = ComboMenu->CheckBox("Automatic Return", false);
-	ComboR = ComboMenu->CheckBox("Use R", true);
+	ComboR = ComboMenu->CheckBox("Use R", false);
 
 	RMenu = MainMenu->AddMenu("R Manager");
 	RAuto = RMenu->CheckBox("Auto R", true);
@@ -190,13 +191,13 @@ void LoadMenu()
 	FleeKey = FleeMenu->AddKey("Key", 84);
 
 	HarassMenu = MainMenu->AddMenu("Harass Manager");
-	HarassQ = HarassMenu->CheckBox("Use Q", true);
-	HarassW = HarassMenu->CheckBox("Use W", true);
+	HarassQ = HarassMenu->CheckBox("Use Q", false);
+	HarassW = HarassMenu->CheckBox("Use W", false);
 	HarassEQ = HarassMenu->CheckBox("Use EQ", false);
 	HarassMin = HarassMenu->CheckBox("Use Min Mana", true);
 	HarassMana = HarassMenu->AddInteger("Min Mana %", 1, 100, 60);
 	HarassToggleKey = HarassMenu->AddKey("Key", 87);
-	HarassDisabled = HarassMenu->CheckBox("Disable All", false);
+	HarassDisabled = HarassMenu->CheckBox("Disable All", true);
 
 	LaneClearMenu = MainMenu->AddMenu("LaneClear Manager");
 	LaneClearQ = LaneClearMenu->CheckBox("Use Q", true);
@@ -255,15 +256,52 @@ void LoadMenu()
 	MiscW = MiscMenu->AddInteger("W Range", 0, 250, 220);
 }
 
-Vec2 LinearPrediction()
+void GetBall()
+{
+	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range());
+	auto player = GEntityList->Player();
+	auto balls = GEntityList->GetAllUnits();
+	auto missiles = GEntityList->GetAllMissiles(true, false);
+	auto allies = GEntityList->GetAllHeros(true, false);
+
+	for (auto balle : balls)
+	{
+		if (Equals(balle->GetObjectName(), "TheDoomBall"))
+		{
+			Ball = balle;
+		}
+	}
+
+	for (auto missile : missiles)
+	{
+		if (Equals(GMissileData->GetName(missile), "OrianaIzuna"))
+		{
+			Ball = missile;
+		}
+	}
+
+	for (auto ally : allies)
+	{
+		if (ally->HasBuff("orianaghostself") || ally->HasBuff("orianaghost"))
+		{
+			Ball = ally;
+		}
+	}
+	if (Ball != nullptr && Ball->GetPosition() != empt)
+	{
+		BallLocation = Ball->GetPosition();
+	}
+}
+
+Vec3 LinearPrediction()
 {
 	auto player = GEntityList->Player();
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
-
-	double h = BallLocation.x;
-	double k = BallLocation.y;
+	double h = 0;
+	double k = 0;
+	
 	double SS = Q->Speed();
-	double temporar = 1000;
+	double temporar = 10000;
 	int t;
 	std::vector<double> Ds;
 
@@ -271,13 +309,15 @@ Vec2 LinearPrediction()
 	{
 		if (!enemy->IsMoving())
 		{
-			return ToVec2(enemy->GetPosition());
+			stoper == false;
+			return enemy->GetPosition();
 		}
 
 
 		if (enemy->IsDashing())
 		{
-			return ToVec2(empt);
+			stoper == false;
+			return empt;
 		}
 
 		double ES = enemy->MovementSpeed();
@@ -285,7 +325,7 @@ Vec2 LinearPrediction()
 		if (GGame->TickCount() >= delayer)
 		{
 			epos.push_back(enemy->GetPosition());
-			delayer = GGame->TickCount() + 75;
+			delayer = GGame->TickCount() + 10;
 		}
 
 		if (epos.size() > 3 && stoper == false)
@@ -300,45 +340,58 @@ Vec2 LinearPrediction()
 					delayer2 = GGame->TickCount() + 300;
 				}
 				else
-					return ToVec2(empt);
+				{
+					return empt;
+				}
 			}
 			else
-				return ToVec2(empt);
+			{
+				return empt;
+			}
 		}
-
+		
 		if (stoper = true && GGame->TickCount() <= delayer2)
 		{
 			Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
-			for (int i = 0; i < 3000; i++)
+			double D = 0;
+			h = BallLocation.x;
+			k = BallLocation.y;
+		
+			for (int i = 0; i < 6000; i++)
 			{
 				Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
 				D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
 				Ds.push_back(D);
-				if (Ds[Ds.size() - 1] <= temporar)
+				if (Ds.size() > 0)
 				{
-					temporar = Ds[Ds.size() - 1];
-				}
-				else
-				{
-					t = i - 1;
-					break;
+					if (Ds[Ds.size() - 1] <= temporar)
+					{
+						temporar = Ds[Ds.size() - 1];
+					}
+					else
+					{
+						t = i - 1;
+						break;
+					}
 				}
 			}
-			t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
+			t = (t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1));
 			Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
-			Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() + enemy->BoundingRadius() - 150));
-			return ToVec2(fut);
+			Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
+			return fut;
 		}
 		else
 		{
-			stoper = false;
-			return ToVec2(empt);
+			return empt;
 		}
 
 		//if (epos.size() > 1)
 		//{
 		//	Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
-		//	for (int i = 0; i < 2000; i++)
+		//	double D = 0;
+		//	h = BallLocation.x;
+		//	k = BallLocation.y;
+		//	for (int i = 0; i < 6000; i++)
 		//	{
 		//		Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
 		//		D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
@@ -355,14 +408,14 @@ Vec2 LinearPrediction()
 		//	}
 		//	t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
 		//	Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
-		//	Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 25));
+		//	Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
 		//	return fut;
 		//}
 		//else
 		//	return empt;
 	}
 	else
-		return ToVec2(empt);
+		return empt;
 }
 
 PLUGIN_EVENT(void) OnRender()
@@ -372,7 +425,7 @@ PLUGIN_EVENT(void) OnRender()
 	Vec2 HeroPos;
 	Vec2 Pos;
 
-	//GPluginSDK->GetRenderer()->DrawOutlinedCircle(ToVec3(LinearPrediction()), Pink(), 50);
+	//GPluginSDK->GetRenderer()->DrawOutlinedCircle(LinearPrediction(), Pink(), 50);
 	GPluginSDK->GetRenderer()->DrawOutlinedCircle(BallLocation, Pink(), 50);
 	//GPluginSDK->GetRenderer()->DrawOutlinedCircle(deneme, Green(), 50);
 
@@ -536,7 +589,7 @@ void CheckEQ(Vec3 Pos)
 		return;
 	for (auto Ally : GEntityList->GetAllHeros(true, false))
 	{
-		if (Ally->IsValidObject() && Ally->IsVisible() && !Ally->IsDead() && Ally->IsValidTarget(Player, E->Range()))
+		if (Ally->IsValidObject() && Ally->IsVisible() && !Ally->IsDead() && Ally->IsHero())
 		{
 			FromAllyToTarget = (Ally->GetPosition() - Pos).Length2D();
 			FromBallToTarget = (BallLocation - Pos).Length2D();
@@ -607,9 +660,9 @@ void Combo()
 		{
 			CheckEQ(target->GetPosition());
 		}
-		if (ComboQ->Enabled() && Q->IsReady() && ToVec3(LinearPrediction()) != empt)
+		if (ComboQ->Enabled() && Q->IsReady() && LinearPrediction() != empt)
 		{
-			Q->CastOnPosition(ToVec3(LinearPrediction()));
+			Q->CastOnPosition(LinearPrediction());
 			//check = true;
 			//delayer6 = GGame->TickCount() + GGame->Latency();
 			//delayer3 = GGame->TickCount() + 1000;
@@ -637,9 +690,9 @@ void Harass()
 			{
 				CheckEQ(target->GetPosition());
 			}
-			if (HarassQ->Enabled() && Q->IsReady() && ToVec3(LinearPrediction()) != empt)
+			if (HarassQ->Enabled() && Q->IsReady() && LinearPrediction() != empt)
 			{
-				Q->CastOnPosition(ToVec3(LinearPrediction()));
+				Q->CastOnPosition(LinearPrediction());
 			}
 		}
 		if (HarassW->Enabled() && W->IsReady() && IsEnough(BallLocation, MiscW->GetInteger()) > 0)
@@ -676,7 +729,10 @@ void GetBallLocation()
 	{
 		if (Ally->HasBuff("orianaghostself") || Ally->HasBuff("orianaghost"))
 		{ 
-			BallLocation = Ally->GetPosition();
+			if (BallLocation != empt)
+			{
+				BallLocation = Ally->GetPosition();
+			}
 		}
 	}
 }
@@ -702,7 +758,7 @@ void KillSteal()
 					{
 						CheckEQ(Enemy->GetPosition());
 					}
-					Q->CastOnPosition(ToVec3(LinearPrediction()));
+					Q->CastOnPosition(LinearPrediction());
 				}
 				if (KillStealR->Enabled() && R->IsReady() && Enemy->IsValidTarget() && (Enemy->GetPosition() - BallLocation).Length2D() < RRange->GetInteger() && IsEnough(BallLocation, RRange->GetInteger()) >= KillStealMin->GetInteger() && GHealthPrediction->GetKSDamage(Enemy, kSlotR, R->GetDelay(), false) > EnemyHealth)
 				{
@@ -806,15 +862,16 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	LinearPrediction();
 	empt.Set(0,0,0);
 
+	//auto missiles = GEntityList->GetAllMissiles(true, false);
+	//for (auto missile : missiles)
+	//{
+	//	if (Equals(GMissileData->GetName(missile), "OrianaIzuna"))
+	//	{
+	//		BallLocation = missile->GetPosition();
+	//	}
+	//}
 
-	auto missiles = GEntityList->GetAllMissiles(true, false);
-	for (auto missile : missiles)
-	{
-		if (Equals(GMissileData->GetName(missile), "OrianaIzuna"))
-		{
-			BallLocation = missile->GetPosition();
-		}
-	}
+	GetBall();
 
 	//if (GGame->TickCount() > delayer3)
 	//{
@@ -920,11 +977,10 @@ PLUGIN_EVENT(void) OnCreateObject(IUnit* Source)
 		if (strcmp(GMissileData->GetName(Source), "OrianaIzuna") == 0)
 		{
 			Ball = Source;
-
+	
 		}
 	}
 }
-
 
 void InstallEventHandlers()
 {
