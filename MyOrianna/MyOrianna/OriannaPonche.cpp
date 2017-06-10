@@ -92,10 +92,12 @@ IMenuOption* DrawBall;
 IMenuOption* DrawBallColor;
 IMenuOption* DrawCD;
 IMenuOption* DrawDisabled;
+IMenuOption* HitChanceRender;
 
 IMenu* MiscMenu;
 IMenuOption* MiscEQ;
 IMenuOption* MiscW;
+IMenuOption* QHitChance;
 
 ISpell2* Q;
 ISpell2* W;
@@ -134,6 +136,9 @@ double delayer5 = 0;
 double delayer6 = 0;
 
 double averageDist = 0;
+double KeyPre = 0;
+int ComboMode = 0;
+std::vector<std::string> const& Names = { "High", "VeryHigh" };
 
 
 
@@ -162,7 +167,7 @@ void LoadMenu()
 	ComboW = ComboMenu->CheckBox("Use W", true);
 	ComboE = ComboMenu->CheckBox("Use E", true);
 	ComboEQ = ComboMenu->CheckBox("Use EQ", true);
-	//ComboAR = ComboMenu->CheckBox("Automatic Return", false);
+	ComboAR = ComboMenu->CheckBox("Always E return", false);
 	ComboR = ComboMenu->CheckBox("Use R", false);
 
 	RMenu = MainMenu->AddMenu("R Manager");
@@ -188,7 +193,7 @@ void LoadMenu()
 	FleeMenu = MainMenu->AddMenu("Flee Manager");
 	FleeW = FleeMenu->CheckBox("Use W", true);
 	FleeE = FleeMenu->CheckBox("Use E", true);
-	FleeKey = FleeMenu->AddKey("Key", 84);
+	FleeKey = FleeMenu->AddKey("Key", 'Z');
 
 	HarassMenu = MainMenu->AddMenu("Harass Manager");
 	HarassQ = HarassMenu->CheckBox("Use Q", false);
@@ -230,6 +235,7 @@ void LoadMenu()
 	KillStealDisabled = KillStealMenu->CheckBox("Disable All", false);
 
 	DrawMenu = MainMenu->AddMenu("Draw Manager");
+	HitChanceRender = DrawMenu->CheckBox("Draw HitChance on player", true);
 	DrawQMenu = DrawMenu->AddMenu("Q Draw Manager");
 	DrawQ = DrawQMenu->CheckBox("Enabled", true);
 	DrawQColor = DrawQMenu->AddColor("Q Color Picker", 255, 255, 0, 255);
@@ -254,6 +260,7 @@ void LoadMenu()
 	MiscMenu = MainMenu->AddMenu("Misc Manager");
 	MiscEQ = MiscMenu->AddInteger("Min Range to EQ", 0, 300, 100);
 	MiscW = MiscMenu->AddInteger("W Range", 0, 250, 220);
+	QHitChance = MiscMenu->AddKey("Q Hit Chance Changer", 'T');
 }
 
 void GetBall()
@@ -293,77 +300,251 @@ void GetBall()
 	}
 }
 
+inline int ChangePriority()
+{
+	if (GetAsyncKeyState(QHitChance->GetInteger()) && !GGame->IsChatOpen() && GGame->Time() > KeyPre)
+	{
+		if (ComboMode == 0)
+		{
+			ComboMode = 1;
+			KeyPre = GGame->Time() + 0.250;
+		}
+		else
+		{
+			ComboMode = 0;
+			KeyPre = GGame->Time() + 0.250;
+		}
+	}
+	return ComboMode;
+}
+
 Vec3 LinearPrediction()
 {
 	auto player = GEntityList->Player();
 	auto enemy = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
-	double h = 0;
-	double k = 0;
-	
-	double SS = Q->Speed();
-	double temporar = 10000;
-	int t;
-	std::vector<double> Ds;
-
-	if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && player->IsValidTarget(enemy, Q->Range()))
+	if (ChangePriority() == 1)
 	{
-		if (!enemy->IsMoving())
+		double h = 0;
+		double k = 0;
+
+		double SS = Q->Speed();
+		double temporar = 10000;
+		int t;
+		std::vector<double> Ds;
+
+		if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && player->IsValidTarget(enemy, Q->Range()))
 		{
-			stoper == false;
-			return enemy->GetPosition();
-		}
-
-
-		if (enemy->IsDashing())
-		{
-			stoper == false;
-			return empt;
-		}
-
-		double ES = enemy->MovementSpeed();
-
-		if (GGame->TickCount() >= delayer)
-		{
-			epos.push_back(enemy->GetPosition());
-			delayer = GGame->TickCount() + 10;
-		}
-
-		if (epos.size() > 3 && stoper == false)
-		{
-			if (ToVec2((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize()) != ToVec2((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize()))
+			if (!enemy->IsMoving())
 			{
-				Vec2 loc1 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize())) * 1000;
-				Vec2 loc2 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize())) * 1000;
-				if (Distance(loc1, loc2) > 10)
+				stoper == false;
+				return enemy->GetPosition();
+			}
+
+
+			if (enemy->IsDashing())
+			{
+				stoper == false;
+				return empt;
+			}
+
+			double ES = enemy->MovementSpeed();
+
+			if (GGame->TickCount() >= delayer)
+			{
+				epos.push_back(enemy->GetPosition());
+				delayer = GGame->TickCount() + 10;
+			}
+
+			if (epos.size() > 3 && stoper == false)
+			{
+				if (ToVec2((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize()) != ToVec2((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize()))
 				{
-					stoper = true;
-					delayer2 = GGame->TickCount() + 300;
+					Vec2 loc1 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize())) * 1000;
+					Vec2 loc2 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize())) * 1000;
+					if (Distance(loc1, loc2) > 10)
+					{
+						stoper = true;
+						delayer2 = GGame->TickCount() + 300;
+					}
+					else
+					{
+						return empt;
+					}
 				}
 				else
 				{
 					return empt;
 				}
 			}
+
+			if (stoper = true && GGame->TickCount() <= delayer2)
+			{
+				Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+				double D = 0;
+				h = BallLocation.x;
+				k = BallLocation.y;
+
+				for (int i = 0; i < 6000; i++)
+				{
+					Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
+					D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
+					Ds.push_back(D);
+					if (Ds.size() > 0)
+					{
+						if (Ds[Ds.size() - 1] <= temporar)
+						{
+							temporar = Ds[Ds.size() - 1];
+						}
+						else
+						{
+							t = i - 1;
+							break;
+						}
+					}
+				}
+				t = (t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1));
+				Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
+				Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
+				return fut;
+			}
 			else
 			{
 				return empt;
 			}
+
+			//if (epos.size() > 1)
+			//{
+			//	Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+			//	double D = 0;
+			//	h = BallLocation.x;
+			//	k = BallLocation.y;
+			//	for (int i = 0; i < 6000; i++)
+			//	{
+			//		Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
+			//		D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
+			//		Ds.push_back(D);
+			//		if (Ds[Ds.size() - 1] <= temporar)
+			//		{
+			//			temporar = Ds[Ds.size() - 1];
+			//		}
+			//		else
+			//		{
+			//			t = i - 1;
+			//			break;
+			//		}
+			//	}
+			//	t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
+			//	Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
+			//	Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
+			//	return fut;
+			//}
+			//else
+			//	return empt;
 		}
-		
-		if (stoper = true && GGame->TickCount() <= delayer2)
+		else
+			return empt;
+	}
+	if (ChangePriority() == 0)
+	{
+		double h = 0;
+		double k = 0;
+
+		double SS = Q->Speed();
+		double temporar = 10000;
+		int t;
+		std::vector<double> Ds;
+
+		if (enemy != nullptr && enemy->IsHero() && enemy->IsValidTarget() && player->IsValidTarget(enemy, Q->Range()))
 		{
-			Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
-			double D = 0;
-			h = BallLocation.x;
-			k = BallLocation.y;
-		
-			for (int i = 0; i < 6000; i++)
+			if (!enemy->IsMoving())
 			{
-				Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
-				D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
-				Ds.push_back(D);
-				if (Ds.size() > 0)
+				stoper == false;
+				return enemy->GetPosition();
+			}
+
+
+			if (enemy->IsDashing())
+			{
+				stoper == false;
+				return empt;
+			}
+
+			double ES = enemy->MovementSpeed();
+
+			if (GGame->TickCount() >= delayer)
+			{
+				epos.push_back(enemy->GetPosition());
+				delayer = GGame->TickCount() + 10;
+			}
+
+			//if (epos.size() > 3 && stoper == false)
+			//{
+			//	if (ToVec2((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize()) != ToVec2((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize()))
+			//	{
+			//		Vec2 loc1 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 2] - epos[epos.size() - 3]).VectorNormalize())) * 1000;
+			//		Vec2 loc2 = ToVec2(enemy->GetPosition() + ((epos[epos.size() - 3] - epos[epos.size() - 4]).VectorNormalize())) * 1000;
+			//		if (Distance(loc1, loc2) > 10)
+			//		{
+			//			stoper = true;
+			//			delayer2 = GGame->TickCount() + 300;
+			//		}
+			//		else
+			//		{
+			//			return empt;
+			//		}
+			//	}
+			//	else
+			//	{
+			//		return empt;
+			//	}
+			//}
+			//
+			//if (stoper = true && GGame->TickCount() <= delayer2)
+			//{
+			//	Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+			//	double D = 0;
+			//	h = BallLocation.x;
+			//	k = BallLocation.y;
+			//
+			//	for (int i = 0; i < 6000; i++)
+			//	{
+			//		Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
+			//		D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
+			//		Ds.push_back(D);
+			//		if (Ds.size() > 0)
+			//		{
+			//			if (Ds[Ds.size() - 1] <= temporar)
+			//			{
+			//				temporar = Ds[Ds.size() - 1];
+			//			}
+			//			else
+			//			{
+			//				t = i - 1;
+			//				break;
+			//			}
+			//		}
+			//	}
+			//	t = (t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1));
+			//	Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
+			//	Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
+			//	return fut;
+			//}
+			//else
+			//{
+			//	return empt;
+			//}
+
+			if (epos.size() > 1)
+			{
+				Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
+				double D = 0;
+				h = BallLocation.x;
+				k = BallLocation.y;
+				for (int i = 0; i < 6000; i++)
 				{
+					Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
+					D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
+					Ds.push_back(D);
 					if (Ds[Ds.size() - 1] <= temporar)
 					{
 						temporar = Ds[Ds.size() - 1];
@@ -374,48 +555,18 @@ Vec3 LinearPrediction()
 						break;
 					}
 				}
+				t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
+				Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
+				Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
+				return fut;
 			}
-			t = (t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1));
-			Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
-			Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
-			return fut;
+			else
+				return empt;
 		}
 		else
-		{
 			return empt;
-		}
-
-		//if (epos.size() > 1)
-		//{
-		//	Vec3 direction = (epos[epos.size() - 1] - epos[epos.size() - 2]).VectorNormalize();
-		//	double D = 0;
-		//	h = BallLocation.x;
-		//	k = BallLocation.y;
-		//	for (int i = 0; i < 6000; i++)
-		//	{
-		//		Vec3 EF = enemy->GetPosition() + direction*(ES / 1000)*i;
-		//		D = abs(sqrt(pow((EF.x - h), 2) + pow(EF.y - k, 2)) - (SS / 1000)*i);
-		//		Ds.push_back(D);
-		//		if (Ds[Ds.size() - 1] <= temporar)
-		//		{
-		//			temporar = Ds[Ds.size() - 1];
-		//		}
-		//		else
-		//		{
-		//			t = i - 1;
-		//			break;
-		//		}
-		//	}
-		//	t = t + (Q->GetDelay() * 1000) + (GGame->Latency() / 1);
-		//	Vec3 EFuture = enemy->GetPosition() + direction*(ES / 1000)*t;
-		//	Vec3 fut = Extend(EFuture, enemy->GetPosition(), (Q->Radius() - 30));
-		//	return fut;
-		//}
-		//else
-		//	return empt;
 	}
-	else
-		return empt;
+	
 }
 
 PLUGIN_EVENT(void) OnRender()
@@ -492,6 +643,25 @@ PLUGIN_EVENT(void) OnRender()
 			GRender->DrawText(Pos, Color, "Harass Toggle Enabled");
 		}
 	}
+	if (HitChanceRender->Enabled())
+	{
+		static IFont* pFont = nullptr;
+	
+		if (pFont == nullptr)
+		{
+			pFont = GRender->CreateFont("Tahoma", 16.f, kFontWeightNormal);
+			pFont->SetOutline(true);
+			pFont->SetLocationFlags(kFontLocationNormal);
+		}
+		Vec2 pos;
+		if (GGame->Projection(GEntityList->Player()->GetPosition(), &pos))
+		{
+			std::string text = std::string(Names[ChangePriority()]);
+			Vec4 clr = Vec4(188, 255, 50, 255);
+			pFont->SetColor(clr);
+			pFont->Render(pos.x, pos.y, text.c_str());
+		}
+	}
 }
 
 int IsEnoughR(Vec3 Location, int range)
@@ -501,7 +671,8 @@ int IsEnoughR(Vec3 Location, int range)
 
 	for (auto Enemy : GEntityList->GetAllHeros(false, true))
 	{
-		if (Enemy != nullptr &&  Enemy->IsValidObject() && Enemy->IsVisible() && !Enemy->IsDead() && Enemy->IsValidTarget() && !Enemy->HasBuff("sionpassivezombie"))
+		if (Enemy != nullptr &&  Enemy->IsValidObject() && Enemy->IsVisible() && !Enemy->IsDead() && Enemy->IsValidTarget() && !Enemy->HasBuff("sionpassivezombie")
+			&& GEntityList->Player()->IsValidTarget(Enemy, range) && Enemy->IsHero() && !Enemy->HasBuffOfType(BUFF_Invulnerability) && !Enemy->IsCreep() && !Enemy->IsJungleCreep())
 		{
 			GPrediction->GetFutureUnitPosition(Enemy, R->GetDelay(), true, Pos);
 			if ((Pos - Location).Length2D() < range)
@@ -672,10 +843,10 @@ void Combo()
 	{
 		CastW();
 	}
-	//if (ComboAR->Enabled() && E->IsReady() && !Q->IsReady())
-	//{
-	//	CastE(Player);
-	//}
+	if (ComboAR->Enabled() && E->IsReady() && !Q->IsReady() && !Player->HasBuff("orianaghostself") && !Player->HasBuff("orianaghost"))
+	{
+		CastE(Player);
+	}
 }
 
 void Harass()
@@ -861,6 +1032,7 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	KillSteal();
 	LinearPrediction();
 	empt.Set(0,0,0);
+	ChangePriority();
 
 	//auto missiles = GEntityList->GetAllMissiles(true, false);
 	//for (auto missile : missiles)
@@ -964,7 +1136,7 @@ PLUGIN_EVENT(bool) OnPreCast(int Slot, IUnit* Target, Vec3* StartPosition, Vec3*
 
 PLUGIN_EVENT(void) OnDash(UnitDash* Args)
 {
-	if (RInitiator->Enabled() && (RAuto->Enabled() || GOrbwalking->GetOrbwalkingMode() == kModeCombo && ComboR->Enabled()) && Args->Source->IsValidObject() && !Args->Source->IsEnemy(Player) && E->IsReady() && Args->Source->IsValidTarget(Player, E->Range()) && ((Args->EndPosition - Player->GetPosition()).Length2D()) <= 1250 && RMin->GetInteger() <= IsEnoughR(Args->EndPosition, RRange->GetInteger()))
+	if (RInitiator->Enabled() && (RAuto->Enabled() || GOrbwalking->GetOrbwalkingMode() == kModeCombo && ComboR->Enabled()) && Args->Source->IsValidObject() && !Args->Source->IsEnemy(Player) && E->IsReady() && Player->IsValidTarget(Args->Source, E->Range()) && ((Args->EndPosition - Player->GetPosition()).Length2D()) <= 1250 && RMin->GetInteger() <= IsEnoughR(Args->EndPosition, RRange->GetInteger()))
 	{
 		CastE(Args->Source);
 	}
