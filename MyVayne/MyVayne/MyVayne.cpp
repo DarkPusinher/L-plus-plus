@@ -671,7 +671,7 @@ Vec3 SmartQLogic()
 					{
 						return Extend(player->GetPosition(), enemySafe->GetPosition(), -450);
 					}
-					else if (temp.size() == 0 && Distance(enemySafe->GetPosition(), player->GetPosition()) < 300)
+					else if (temp.size() == 0 && Distance(enemySafe->GetPosition(), player->GetPosition()) > 300)
 					{
 						return GGame->CursorPosition();
 					}
@@ -753,7 +753,7 @@ Vec3 SmartQLogic()
 					{
 						return Extend(player->GetPosition(), enemy->GetPosition(), -450);
 					}
-					else if (temp.size() == 0 && Distance(enemy->GetPosition(), player->GetPosition()) < 300)
+					else if (temp.size() == 0 && Distance(enemy->GetPosition(), player->GetPosition()) > 300)
 					{
 						return GGame->CursorPosition();
 					}
